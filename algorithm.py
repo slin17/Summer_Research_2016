@@ -79,38 +79,20 @@ def evaluateGreedyResult(setPaths):
 	return S
 
 def generate_graphs_params(filename):
-    params_graph = []  # a list of graph creation arguments
-    
-    #get graph creation parameters
-    try:
-        #file = open(filename, "r")
-		file = open("test_graphs_params.txt", "r")
-		line = file.readline()
-		
-		while line != "":
-			values = line.strip().split("\t")
-			values[0] = int(values[0])
-			values[1] = float(values[1])
-			values[2] = int(values[2])
-			values[3] = int(values[3]) #the start point for randint func
-			values[4] = int(values[4]) #the end point for randint func
-			values[5] = int(values[5]) #the seed for randint 
-			params_graph.append(values)
-			line = file.readline()
-			return params_graph
-            
-    except FileNotFoundError as e:
-        raise ("Cannot open file: " + str(e))
-   
-    
+	param_graphs = []
+	file = open(filename, "r")
+	line = file.readline().strip().split()
+	for i in xrange(len(line)):
+		if i == 1:
+			param_graphs.append(float(line[i]))
+		else:
+			param_graphs.append(int(line[i]))
+
+	return param_graphs
+
 def main(filename):
-    
     #read graph creation properties from file
-    
-    test_graphs = generate_graphs_params(filename)
-    
-    #graph to be used for testing
-    g = test_graphs[0]
+    g = generate_graphs_params(filename)
     G = nx.fast_gnp_random_graph(g[0], g[1], g[2], False)
     
     H = G.copy()
@@ -120,14 +102,12 @@ def main(filename):
     	rInt = random.randint(g[3],g[4])
     	H[u][v]['w'] = rInt
     	randSeed += 1
-	
-	draw_graph(H)
-
+    draw_graph(H)
     set_of_paths_P = nx.all_pairs_shortest_path(H)
     setP = removeDuplicate(set_of_paths_P)
     uncoveredL = get_all_edges_from_SOP(setP)
     retPaths = greedyAlgorithm(setP, uncoveredL)
-
+    print retPaths
 
 if __name__ == "__main__":
     main(sys.argv[1])
