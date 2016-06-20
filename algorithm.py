@@ -2,29 +2,15 @@ import matplotlib.pyplot as plt
 import networkx as nx 
 import random
 
-G = nx.fast_gnp_random_graph(10,0.8,1,False)
+#G = nx.fast_gnp_random_graph(15,0.5,5,False)
 
-H = G.copy()
-
-labelsdict = {}
-
-for node in H.nodes():
-	labelsdict[node] = str(node)
-
-pos=nx.spring_layout(H)
-
-nx.draw(H, labels = labelsdict, with_label = True)
-
-#nx.draw(H)
-plt.show()
-
-
-for (u,v) in H.edges():
-	H[u][v]['w'] = random.randint(0,10)
-	#H[u][v]['covered'] = False
-
-
-set_of_paths_P = nx.all_pairs_shortest_path(H)
+def draw_graph(H):
+	labelsdict = {}
+	for node in H.nodes():
+		labelsdict[node] = str(node)
+	pos=nx.spring_layout(H)
+	nx.draw(H, labels = labelsdict, with_label = True)
+	plt.show()
 
 
 def removeDuplicate(set_of_paths_P):
@@ -39,9 +25,6 @@ def removeDuplicate(set_of_paths_P):
 					retListofL.append(pathL)
 	return retListofL
 
-setP = removeDuplicate(set_of_paths_P) 
-#print setP 
-
 def get_all_edges_from_SOP(setP):
 	retL = []
 	for path in setP:
@@ -51,8 +34,6 @@ def get_all_edges_from_SOP(setP):
 			if not (temp in retL or tempRev in retL):
 				retL.append(temp)
 	return retL
-
-gEFS = get_all_edges_from_SOP(setP)
 
 def scoreFunc(path, uncoveredL):
 	retScore = 0
@@ -96,9 +77,62 @@ def evaluateGreedyResult(setPaths):
 		S.add(path[len(path)-1])
 	return S
 
-setPaths = greedyAlgorithm(setP, gEFS)
-#print setPaths
-print evaluateGreedyResult(setPaths)
+def generate_graphs_params(filename):
+    params_graph = []  # a list of graph creation arguments
+    
+    #get graph creation parameters
+    try:
+        file = open(filename, "r")
+        
+        line = file.readline()
+        
+        while line != "":
+            values = line.strip().split("\t")
+            
+            values[0] = int(values[0])
+            values[1] = float(values[1])
+            values[2] = int(values[2])
+            values[3] = int(values[3]) #the start point for randint func
+            values[4] = int(values[4]) #the end point for randint func
+            values[5] = int(values[5]) #the seed for randint 
+            
+            params_graph.append(values)
+            line = file.readline()
+            
+        return params_graph
+            
+    except FileNotFoundError as e:
+        raise ("Cannot open file: " + str(e))
+   
+    
+def main(filename):
+    
+    #read graph creation properties from file
+    test_graphs = generate_graphs(filename)
+    
+    #graph to be used for testing
+    g = test_graphs[0]
+    G = nx.fast_gnp_random_graph(g[0], g[1], g[2], False)
+    
+    H = G.copy()
+    randSeed = g[5]
+    for (u,v) in H.edges():
+		rInt = random.randint(g[3],g[4])	
+		H[u][v]['w'] = rInt
+		randSeed += 1
+	
+	draw_graph(H)
+
+    set_of_paths_P = nx.all_pairs_shortest_path(H)
+    setP = removeDuplicate(set_of_paths_P) 
+
+   	uncoveredL = get_all_edges_from_SOP(setP)
+   	
+   	retPaths = greedyAlgorithm(setP, uncoveredL)
+
+
+if __name__ == "__main__":
+    main()
 
 
 
