@@ -36,7 +36,7 @@ def get_all_edges_from_SOP(setP):
 				retL.append(temp)
 	return retL
 
-def scoreFunc(path, uncoveredL, usedMSL):
+def scoreFunc(path, uncoveredL):
 	retScore = 0
 	for i in xrange(len(path)-1):
 		temp = (path[i],path[i+1])
@@ -45,22 +45,9 @@ def scoreFunc(path, uncoveredL, usedMSL):
 		bool2 = tempRev in uncoveredL
 		if  bool1 or bool2:
 			retScore += 1
-	if path[0] in usedMSL:
-		retScore += 1
-	if path[-1] in usedMSL:
-		retScore += 1
 	return retScore
 
-def scoreFunc2(path, uncoveredL, usedMSL):
-	retScore = 0
-	for i in xrange(len(path)-1):
-		temp = (path[i],path[i+1])
-		tempRev = (path[i+1], path[i])
-		bool1 = temp in uncoveredL
-		bool2 = tempRev in uncoveredL
-		if  bool1 or bool2:
-			retScore += 1
-	return retScore
+
 
 def deleteEdgesFromL(path, uncoveredL):
 	for i in xrange(len(path)-1):
@@ -73,23 +60,56 @@ def deleteEdgesFromL(path, uncoveredL):
 		if bool2:
 			uncoveredL.remove(tempRev)
 
+def tieBreakerPath(listofPaths, usedMSL):
+	maxTie = 0
+	mTPath = []
+	for path in listofPaths:
+		if path[0] in usedMSL and path[-1] in usedMSL:
+			return path 
+		elif path[0] in usedMSL:
+			maxTie = 1
+			mTPath = path
+		elif path[-1] in usedMSL:
+			maxTie = 1
+			mTPath = path
+	
+	if maxTie == 0:
+		return listofPaths[0]
+	return mTPath
+
 def greedyAlgorithm(setP, uncoveredL):
-	setPCopy = setP[:]
+	
 	retPaths = []
 	usedMSL = set()
+	hSDict = {}
+	maxP = []
 	while len(uncoveredL) > 0:
-		maxScore = 0
-		maxP = []
-		for path in setPCopy:
-			score = scoreFunc(path, uncoveredL, usedMSL)
+		maxScore = -1
+		
+		for path in setP:
+			score = scoreFunc(path, uncoveredL)
 			if score > maxScore:
-				maxP = path
+				hSDict.clear()
+				hSDict[score] = [path]
 				maxScore = score
+
+			if score == maxScore:
+				if path not in hSDict[score]:
+					hSDict[score].append(path)
+
+		lP = hSDict[hSDict.keys()[0]]
+		if len(lP) > 1:
+			
+			maxP = tieBreakerPath(lP, usedMSL)
+			
+		else:
+			maxP = lP[0]
+
 		deleteEdgesFromL(maxP, uncoveredL)
 		retPaths.append(maxP)
 		usedMSL.add(maxP[0])
 		usedMSL.add(maxP[-1])
-		setPCopy.remove(maxP)
+		setP.remove(maxP)
 	print "usedMSL: ", usedMSL
 	print "size of usedMSL: ", len(usedMSL)
 	return retPaths
@@ -99,6 +119,7 @@ testPaths = [[1,2,3],[1,2,5,3],[1,4,3],[1,4,5,3],[2,5],[4,5],[4,3],[2,3],[3,4]]
 testUncoverdL = [(1,2),(1,4),(2,5),(5,4),(2,3),(5,3),(4,3)]
 print greedyAlgorithm(testPaths, testUncoverdL)
 '''
+
 
 def evaluateGreedyResult(setPaths):
 	S = set()
