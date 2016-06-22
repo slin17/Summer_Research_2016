@@ -67,9 +67,9 @@ def deleteEdgesFromL(path, uncoveredL):
 
 def greedyAlgorithm(setP, uncoveredL):
 	#coeficients
-    EDGE_COVERAGE = 1
-    EDGE_LOAD = 0
-    NODE_LOAD = 0
+	EDGE_COVERAGE = 1
+	EDGE_LOAD = 0
+	NODE_LOAD = 0
 
 	retPaths = []
 	while len(uncoveredL) > 0:
@@ -79,8 +79,9 @@ def greedyAlgorithm(setP, uncoveredL):
 			score = scoreFunc(path, uncoveredL)
 			if score > maxScore:
 				maxP = path
-		deleteEdgesFromL(maxP, uncoveredL)
-		retPaths.append(maxP)
+				deleteEdgesFromL(maxP, uncoveredL)
+				retPaths.append(maxP)
+
 	return retPaths
 
 
@@ -119,6 +120,12 @@ def main(filename):
     	H[u][v]['w'] = rInt
     	randSeed += 1
 
+    draw_graph(H)
+
+    set_of_paths_P = nx.all_pairs_shortest_path(H)
+    setP = removeDuplicate(set_of_paths_P)
+    uncovered_edges = get_all_edges_from_SOP(setP)
+
     #initialize all network loads to 1
     nds = G.nodes();
     for nd in nds:
@@ -127,12 +134,7 @@ def main(filename):
     for e in uncovered_edges:
         edge_loads[e] = 1
 
-    draw_graph(H)
-
-    set_of_paths_P = nx.all_pairs_shortest_path(H)
-    setP = removeDuplicate(set_of_paths_P)
-    uncoveredL = get_all_edges_from_SOP(setP)
-    retPaths = greedyAlgorithm(setP, uncoveredL)
+    retPaths = greedyAlgorithm(setP, uncovered_edges)
     print retPaths
 
 
