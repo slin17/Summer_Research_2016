@@ -133,16 +133,21 @@ def evaluateGreedyResult(setPaths):
 
 
 def generate_graphs_params(filename):
-	param_graphs = []
+	list_of_param_graphs = []
+	
 	file = open(filename, "r")
-	line = file.readline().strip().split()
-	for i in xrange(len(line)):
-		if i == 1:
-			param_graphs.append(float(line[i]))
-		else:
-			param_graphs.append(int(line[i]))
+	list_of_lines = file.readlines()
+	for raw_line in list_of_lines:
+		param_graphs = []
+		line = raw_line.strip().split()
+		for i in xrange(len(line)):
+			if i == 1:
+				param_graphs.append(float(line[i]))
+			else:
+				param_graphs.append(int(line[i]))
+		list_of_param_graphs.append(param_graphs)
 
-	return param_graphs
+	return list_of_param_graphs
 
 
 def main(filename):
