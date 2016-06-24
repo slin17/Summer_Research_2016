@@ -7,6 +7,7 @@ import random
 node_loads = {}
 edge_loads = {}
 paths_used = {}
+nodes_used = None
 
 def draw_graph(H):
 	labelsdict = {}
@@ -102,29 +103,38 @@ def greedyAlgorithm(setP, uncoveredL):
 				maxP = path
 				deleteEdgesFromL(maxP, uncoveredL)
 				retPaths.append(maxP)
+
+				#set new high score as key
 				hSDict.clear()
 				hSDict[score] = [path]
 				maxScore = score
 
 			if score == maxScore:
+				#store all paths this a score == highscore
 				if path not in hSDict[score]:
 					hSDict[score].append(path)
 
-		lP = hSDict[hSDict.keys()[0]]
+		lP = hSDict[hSDict.keys()[0]]	#list of tied paths
 		if len(lP) > 1:
-			
 			maxP = tieBreakerPath(lP, usedMSL)
-			
 		else:
 			maxP = lP[0]
 
 		deleteEdgesFromL(maxP, uncoveredL)
 		retPaths.append(maxP)
+
+		#keep track of nodes used as monitoring stations
 		usedMSL.add(maxP[0])
 		usedMSL.add(maxP[-1])
-		setP.remove(maxP)
-	print "usedMSL: ", usedMSL
-	print "size of usedMSL: ", len(usedMSL)
+		setP.remove(maxP)		#remove shoden path from the chosen path
+
+		#update load values
+		update_load_values(maxP)
+
+	#print "usedMSL: ", usedMSL
+	#print "size of usedMSL: ", len(usedMSL)
+	nodes_used = usedMSL
+	print("Nodes used: " + str(nodes_used))
 	return retPaths
 
 '''
@@ -183,9 +193,9 @@ def main(filename):
         edge_loads[e] = 1
 
     retPaths = greedyAlgorithm(setP, uncovered_edges)
-    print retPaths
+    #print retPaths
     print "the size of retPaths: ", len(retPaths)
-
+    print_result(retPaths)
 
 
 #*********************************************
@@ -225,6 +235,83 @@ def update_load_values(path):
             edge_loads[edge] += 1
         elif rev_edge in edge_loads:
             edge_loads[rev_edge] += 1
+
+
+def print_result(rpaths):
+	file = open("results.txt", 'a')
+
+	file.write("\nPaths Used During Probing: \n")
+	file.write(str(rpaths))
+
+	#calculate number of resued paths
+	paths_used = {}
+	for p in rpaths:
+		if not str(p) in paths_used:
+			paths_used[str(p)] = 1
+		else:
+			paths_used[str(p)] += 1
+	
+	#reverse the dictionary
+	path_frequencies = {}
+	high_freq = 0
+	for p in paths_used:
+		freq = paths_used[p]
+		if freq > high_freq:
+			high_freq = freq
+
+		if freq in path_frequencies:
+			path_frequencies[freq].append(p)
+		else:
+			path_frequencies[freq] = [p]
+
+	file.write("\n\nMost reused path/s: " + str(path_frequencies[high_freq]) + " was/were used " +
+		str(high_freq) + " times")
+	file.write("\nPath Resuse or Loads: \n" + str(path_frequencies))
+
+	file.write("\n\nNodes Used as Monitoring Stations: \n")
+	file.write(str(nodes_used) + "\n")	#we need to change the data structure
+
+	#calculate node load results
+	total_load = 0
+	max_load = 0
+	max_load_at = 0
+
+	for nd in node_loads:
+		load = node_loads[nd]
+		total_load += load
+
+		if load > max_load:
+			max_load = load
+			max_load_at = nd
+
+	mean_load = total_load/len(node_loads.keys())
+
+	file.write("\n********************************\nNode Loads\n" +
+		"- Average Node Load: " + str(mean_load) +
+		"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_at))
+	file.write("\n All Node Loads: \n" + str(node_loads))
+
+	#calculate edge load results
+	total_load = 0
+	max_load = 0
+	max_load_at = 0
+
+	for eg in edge_loads:
+		load = edge_loads[eg]
+		total_load += edge_loads[eg]
+
+		if load > max_load:
+			max_load = load
+			max_load_at = eg
+
+	mean_load = total_load / len(edge_loads.keys())
+
+	file.write("\n\n********************************\nEdge Loads\n" +
+		"- Average Edge Load: " + str(mean_load) +
+		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_at))
+	file.write("\n All Edge Loads: \n" + str(edge_loads))
+
+	file.close()
 
 
 if __name__ == "__main__":
