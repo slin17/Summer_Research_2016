@@ -8,6 +8,7 @@ node_loads = {}
 edge_loads = {}
 paths_used = {}
 
+
 def draw_graph(H):
 	labelsdict = {}
 	for node in H.nodes():
@@ -52,6 +53,7 @@ def scoreFunc(path, uncoveredL):
 			retScore += 1
 	return retScore
 
+
 def deleteEdgesFromL(path, uncoveredL):
 	for i in xrange(len(path)-1):
 		temp = (path[i],path[i+1])
@@ -81,7 +83,13 @@ def tieBreakerPath(listofPaths, usedMSL):
 		return listofPaths[0]
 	return mTPath
 
+
 def greedyAlgorithm(setP, uncoveredL):
+
+	#coeficients
+	EDGE_COVERAGE = 1
+	EDGE_LOAD = 0
+	NODE_LOAD = 0
 	
 	retPaths = []
 	usedMSL = set()
@@ -98,32 +106,29 @@ def greedyAlgorithm(setP, uncoveredL):
 				maxScore = score
 
 			if score == maxScore:
+				#store all paths this a score == highscore
 				if path not in hSDict[score]:
 					hSDict[score].append(path)
 
-		lP = hSDict[hSDict.keys()[0]]
+		lP = hSDict[hSDict.keys()[0]]	#list of tied paths
 		if len(lP) > 1:
-			
 			maxP = tieBreakerPath(lP, usedMSL)
-			
 		else:
 			maxP = lP[0]
 
 		deleteEdgesFromL(maxP, uncoveredL)
 		retPaths.append(maxP)
+
+		#keep track of nodes used as monitoring stations
 		usedMSL.add(maxP[0])
 		usedMSL.add(maxP[-1])
-		setP.remove(maxP)
-	print "usedMSL: ", usedMSL
-	print "size of usedMSL: ", len(usedMSL)
+		setP.remove(maxP)		#remove shoden path from the chosen path
+
+		#update load values
+		update_load_values(maxP)
 	return retPaths
-
-'''
-testPaths = [[1,2,3],[1,2,5,3],[1,4,3],[1,4,5,3],[2,5],[4,5],[4,3],[2,3],[3,4]]
-testUncoverdL = [(1,2),(1,4),(2,5),(5,4),(2,3),(5,3),(4,3)]
-print greedyAlgorithm(testPaths, testUncoverdL)
-'''
-
+	
+	
 def evaluateGreedyResult(setPaths):
 	S = set()
 	for path in setPaths:
@@ -179,9 +184,9 @@ def main(filename):
         edge_loads[e] = 1
 
     retPaths = greedyAlgorithm(setP, uncovered_edges)
-    print retPaths
+    #print retPaths
     print "the size of retPaths: ", len(retPaths)
-
+    print_result(retPaths, setP)
 
 
 #*********************************************
@@ -221,6 +226,59 @@ def update_load_values(path):
             edge_loads[edge] += 1
         elif rev_edge in edge_loads:
             edge_loads[rev_edge] += 1
+
+
+def print_result(retpaths, inpaths):
+	file = open("results.txt", 'a')
+
+	file.write("\nPaths Used During Probing: \n")
+	file.write(str(retpaths))
+
+
+	file.write("\n\nNodes Used as Monitoring Stations: \n")
+	file.write(str(nodes_used) + "\n")	#we need to change the data structure
+
+	#calculate node load results
+	total_load = 0
+	max_load = 0
+	max_load_at = 0
+
+	for nd in node_loads:
+		load = node_loads[nd]
+		total_load += load
+
+		if load > max_load:
+			max_load = load
+			max_load_at = nd
+
+	mean_load = total_load/len(node_loads.keys())
+
+	file.write("\n********************************\nNode Loads\n" +
+		"- Average Node Load: " + str(mean_load) +
+		"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_at))
+	file.write("\n All Node Loads: \n" + str(node_loads))
+
+	#calculate edge load results
+	total_load = 0
+	max_load = 0
+	max_load_at = 0
+
+	for eg in edge_loads:
+		load = edge_loads[eg]
+		total_load += edge_loads[eg]
+
+		if load > max_load:
+			max_load = load
+			max_load_at = eg
+
+	mean_load = total_load / len(edge_loads.keys())
+
+	file.write("\n\n********************************\nEdge Loads\n" +
+		"- Average Edge Load: " + str(mean_load) +
+		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_at))
+	file.write("\n All Edge Loads: \n" + str(edge_loads))
+
+	file.close()
 
 
 if __name__ == "__main__":
