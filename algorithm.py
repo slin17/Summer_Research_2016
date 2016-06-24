@@ -243,34 +243,7 @@ def print_result(retpaths, inpaths):
 
 	file.write("\nPaths Used During Probing: \n")
 	file.write(str(retpaths))
-
-	"""		NEED TO BE REMOVED
-	#calculate number of resued paths
-	paths_used = {}
-	for p in retpaths:
-		if not str(p) in paths_used:
-			paths_used[str(p)] = 1
-		else:
-			paths_used[str(p)] += 1
 	
-	#reverse the dictionary
-	path_frequencies = {}
-	high_freq = 0
-	for p in paths_used:
-		freq = paths_used[p]
-		if freq > high_freq:
-			high_freq = freq
-
-		if freq in path_frequencies:
-			path_frequencies[freq].append(p)
-		else:
-			path_frequencies[freq] = [p]
-
-	file.write("\nNumber of Unique Paths Used: " + str(len(paths_used.keys())) + " out of " + str(len(inpaths)))
-	file.write("\n\nMost reused path/s: " + str(path_frequencies[high_freq]) + " was/were used " +
-		str(high_freq) + " times")
-	file.write("\nPath Resuse or Loads: \n" + str(path_frequencies))
-	"""
 
 	file.write("\n\nNodes Used as Monitoring Stations: \n")
 	file.write(str(nodes_used) + "\n")	#we need to change the data structure
