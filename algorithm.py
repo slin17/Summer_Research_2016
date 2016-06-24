@@ -3,11 +3,6 @@ import matplotlib.pyplot as plt
 import networkx as nx 
 import random
 
-#Global Variables
-node_loads = {}
-edge_loads = {}
-paths_used = {}
-
 
 def draw_graph(H):
 	labelsdict = {}
@@ -84,7 +79,7 @@ def tieBreakerPath(listofPaths, usedMSL):
 	return mTPath
 
 
-def greedyAlgorithm(setP, uncoveredL):
+def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 
 	#coeficients
 	EDGE_COVERAGE = 1
@@ -125,10 +120,10 @@ def greedyAlgorithm(setP, uncoveredL):
 		setP.remove(maxP)		#remove shoden path from the chosen path
 
 		#update load values
-		update_load_values(maxP)
+		update_load_values(maxP, node_loads, edge_loads)
 	return retPaths
 	
-	
+
 def evaluateGreedyResult(setPaths):
 	S = set()
 	for path in setPaths:
@@ -157,40 +152,36 @@ def generate_graphs_params(filename):
 
 def main(filename):
     #read graph creation properties from file
-    g = generate_graphs_params(filename)
-    G = nx.fast_gnp_random_graph(g[0], g[1], g[2], False)
-    
-    #add edge weights 
-    H = G.copy()
-    randSeed = g[5]
-    for (u,v) in H.edges():
-    	random.seed(randSeed)
-    	rInt = random.randint(g[3],g[4])
-    	H[u][v]['w'] = rInt
-    	randSeed += 1
+    list_of_param_graphs = generate_graphs_params(filename)
 
-    draw_graph(H)
-
-    set_of_paths_P = nx.all_pairs_shortest_path(H)
-    setP = removeDuplicate(set_of_paths_P)
-    uncovered_edges = get_all_edges_from_SOP(setP)
-
-    #initialize all network loads to 1
-    nds = G.nodes();
-    for nd in nds:
-        node_loads[nd] = 1
-        
-    for e in uncovered_edges:
-        edge_loads[e] = 1
-
-    retPaths = greedyAlgorithm(setP, uncovered_edges)
-    #print retPaths
-    print "the size of retPaths: ", len(retPaths)
-    print_result(retPaths, setP)
+    for param_graphs in list_of_param_graphs:
+    	node_loads = {}
+    	edge_loads = {}
+    	paths_used = {}
+    	H = nx.fast_gnp_random_graph(param_graphs[0], param_graphs[1], param_graphs[2], False)
+    	randSeed = param_graphs[5]
+    	for (u,v) in H.edges():
+    		random.seed(randSeed)
+    		rInt = random.randint(param_graphs[3],param_graphs[4])
+    		H[u][v]['w'] = rInt
+    		randSeed += 1
+    	draw_graph(H)
+    	set_of_paths_P = nx.all_pairs_shortest_path(H)
+    	setP = removeDuplicate(set_of_paths_P)
+    	uncovered_edges = get_all_edges_from_SOP(setP)
+    	#initialize all network loads to 1
+    	nds = H.nodes();
+    	for nd in nds:
+    		node_loads[nd] = 0
+    	for e in uncovered_edges:
+    		edge_loads[e] = 0
+    	retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
+    	#print retPaths
+    	print "the size of retPaths: ", len(retPaths)
+    	print_result(retPaths, setP, node_loads, edge_loads)
 
 
-#*********************************************
-def node_load_score(path):
+def node_load_score(path, node_loads):
     score = 0
     for nd in path:
         score += node_loads[nd]
@@ -198,7 +189,7 @@ def node_load_score(path):
     return score
 
 
-def edge_load_score(path):
+def edge_load_score(path, edge_loads):
     score = 0
     for i in range (len(path) - 1):
         edge = (path[i], path[i + 1])
@@ -212,7 +203,7 @@ def edge_load_score(path):
     return score
 
 
-def update_load_values(path):
+def update_load_values(path, node_loads,edge_loads):
     #update node loads
     for nd in path:
         node_loads[nd] += 1;
@@ -228,15 +219,13 @@ def update_load_values(path):
             edge_loads[rev_edge] += 1
 
 
-def print_result(retpaths, inpaths):
-	file = open("results.txt", 'a')
+def print_result(retPaths, inPaths, node_loads, edge_loads):
+	file = open("results.txt", "a")
+	
+	file.write("Paths Used During Probing: \n")
 
-	file.write("\nPaths Used During Probing: \n")
-	file.write(str(retpaths))
-
-
-	file.write("\n\nNodes Used as Monitoring Stations: \n")
-	file.write(str(nodes_used) + "\n")	#we need to change the data structure
+	for path in retPaths:
+		file.write(str(path) + "\n")
 
 	#calculate node load results
 	total_load = 0
@@ -253,10 +242,10 @@ def print_result(retpaths, inpaths):
 
 	mean_load = total_load/len(node_loads.keys())
 
-	file.write("\n********************************\nNode Loads\n" +
+	file.write("\n-----------------\nNode Loads\n" +
 		"- Average Node Load: " + str(mean_load) +
 		"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_at))
-	file.write("\n All Node Loads: \n" + str(node_loads))
+	file.write("\n All Node Loads: \n" + str(node_loads)+"\n")
 
 	#calculate edge load results
 	total_load = 0
@@ -273,11 +262,29 @@ def print_result(retpaths, inpaths):
 
 	mean_load = total_load / len(edge_loads.keys())
 
-	file.write("\n\n********************************\nEdge Loads\n" +
+	file.write("\n-----------------\nEdge Loads\n" +
 		"- Average Edge Load: " + str(mean_load) +
 		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_at))
-	file.write("\n All Edge Loads: \n" + str(edge_loads))
+	file.write("\n All Edge Loads: \n")
+	i = 0
+	while i < len(edge_loads.keys()) - 4:
+		edge0 = edge_loads.keys()[i]
+		edge1 = edge_loads.keys()[i+1]
+		edge2 = edge_loads.keys()[i+2]
+		edge3 = edge_loads.keys()[i+3]
 
+		load_on_edge0 = edge_loads[edge0]
+		load_on_edge1 = edge_loads[edge1]
+		load_on_edge2 = edge_loads[edge2]
+		load_on_edge3 = edge_loads[edge3]
+
+		formatted_str = (str(edge0) + " : " + str(load_on_edge0) + " | " +
+			str(edge1) + " : " + str(load_on_edge1) + " | " + 
+			str(edge2) + " : " + str(load_on_edge2) + " | " +
+			str(edge3) + " : " + str(load_on_edge3) + "\n") 
+		file.write(formatted_str)
+		i += 4 
+	file.write("\n")
 	file.close()
 
 
