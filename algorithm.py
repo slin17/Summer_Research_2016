@@ -53,10 +53,6 @@ def scoreFunc(path, uncoveredL):
 	return retScore
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> refs/remotes/origin/master
 def deleteEdgesFromL(path, uncoveredL):
 	for i in xrange(len(path)-1):
 		temp = (path[i],path[i+1])
@@ -68,15 +64,7 @@ def deleteEdgesFromL(path, uncoveredL):
 		if bool2:
 			uncoveredL.remove(tempRev)
 
-<<<<<<< HEAD
 
-def greedyAlgorithm(setP, uncoveredL):
-	#coeficients
-	EDGE_COVERAGE = 1
-	EDGE_LOAD = 0
-	NODE_LOAD = 0
-
-=======
 def tieBreakerPath(listofPaths, usedMSL):
 	maxTie = 0
 	mTPath = []
@@ -95,8 +83,12 @@ def tieBreakerPath(listofPaths, usedMSL):
 	return mTPath
 
 def greedyAlgorithm(setP, uncoveredL):
+
+	#coeficients
+	EDGE_COVERAGE = 1
+	EDGE_LOAD = 0
+	NODE_LOAD = 0
 	
->>>>>>> refs/remotes/origin/master
 	retPaths = []
 	usedMSL = set()
 	hSDict = {}
@@ -107,14 +99,9 @@ def greedyAlgorithm(setP, uncoveredL):
 		for path in setP:
 			score = scoreFunc(path, uncoveredL)
 			if score > maxScore:
-<<<<<<< HEAD
 				maxP = path
 				deleteEdgesFromL(maxP, uncoveredL)
 				retPaths.append(maxP)
-
-	return retPaths
-
-=======
 				hSDict.clear()
 				hSDict[score] = [path]
 				maxScore = score
@@ -145,8 +132,6 @@ testPaths = [[1,2,3],[1,2,5,3],[1,4,3],[1,4,5,3],[2,5],[4,5],[4,3],[2,3],[3,4]]
 testUncoverdL = [(1,2),(1,4),(2,5),(5,4),(2,3),(5,3),(4,3)]
 print greedyAlgorithm(testPaths, testUncoverdL)
 '''
-
->>>>>>> refs/remotes/origin/master
 
 def evaluateGreedyResult(setPaths):
 	S = set()
