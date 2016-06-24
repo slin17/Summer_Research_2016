@@ -5,6 +5,13 @@ import random
 
 
 def draw_graph(H):
+	'''
+	a function to draw a given graph with nodes labelled
+	Input:
+		H - a graph created by networkx.fast_gnp_random_graph() method
+	Output:
+		None
+	'''
 	labelsdict = {}
 	for node in H.nodes():
 		labelsdict[node] = str(node)
@@ -14,6 +21,14 @@ def draw_graph(H):
 
 
 def removeDuplicate(set_of_paths_P):
+	'''
+	Given a set of paths, remove the duplicated ones 
+	[1,2,3] and [3,2,1] are the same. So, one of them is a duplicate
+	Input:
+		a set of paths (a list of lists)
+	Output:
+		a set of paths with duplicates removed
+	'''
 	retListofL = []
 	for start_node in set_of_paths_P.keys():
 		for end_node in set_of_paths_P[start_node].keys():
@@ -27,6 +42,14 @@ def removeDuplicate(set_of_paths_P):
 
 
 def get_all_edges_from_SOP(setP):
+	'''
+	Given a path (list of edges/tuples), get all the edges without duplicates 
+	(1,2) and (2,1) are the same. So, one of them is a duplicate
+	Input:
+		a path (list of edges/tuples)
+	Output:
+		a path (list of edges/tuples)
+	'''
 	retL = []
 	for path in setP:
 		for i in xrange(len(path)-1):
@@ -38,6 +61,14 @@ def get_all_edges_from_SOP(setP):
 
 
 def scoreFunc(path, uncoveredL):
+	'''
+	Given a path (list of edges/tuples) and a list of uncovered edges
+	if a given path has an "uncovered" edge, increment the score by 1
+	Input:
+		a path (list of edges/tuples) and a list of uncovered edges
+	Output:
+		score, which represents how many uncovered edges the input path covers  
+	'''
 	retScore = 0
 	for i in xrange(len(path)-1):
 		temp = (path[i],path[i+1])
@@ -50,6 +81,14 @@ def scoreFunc(path, uncoveredL):
 
 
 def deleteEdgesFromL(path, uncoveredL):
+	'''
+	Given a path (list of edges/tuples) and a list of uncovered edges
+	if a given path has an "uncovered" edge, delete the edge in the list of uncovered edges
+	Input:
+		a path (list of edges/tuples) and a list of uncovered edges
+	Output:
+		None 
+	'''
 	for i in xrange(len(path)-1):
 		temp = (path[i],path[i+1])
 		tempRev = (path[i+1], path[i])
@@ -62,6 +101,15 @@ def deleteEdgesFromL(path, uncoveredL):
 
 
 def tieBreakerPath(listofPaths, usedMSL):
+	'''
+	Given a list of paths and a list of used monitoring stations [MS] (nodes)
+	Return a path with its endpoints both, one of them or none, being in the list of used MS
+	If there are multiple "both"s, return the 1st one (arbitray decision), the same goes for multiple "one"s
+	Input:
+		list of paths/lists and a list of integers (nodes)
+	Output:
+		a path/list of integers (nodes)  
+	'''
 	maxTie = 0
 	mTPath = []
 	for path in listofPaths:
@@ -80,7 +128,13 @@ def tieBreakerPath(listofPaths, usedMSL):
 
 
 def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
-
+	'''
+	a Greedy Algorithm that tries to pick, on every iteration, the path with the maximum score 
+	Input:
+		a set of paths given by the networkx.all_pairs_shortest_paths function
+	Output:
+		a set of paths picked by Greedy Algorithm
+	'''
 	#coeficients
 	EDGE_COVERAGE = 1
 	EDGE_LOAD = 0
