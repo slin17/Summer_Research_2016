@@ -101,10 +101,6 @@ def greedyAlgorithm(setP, uncoveredL):
 		for path in setP:
 			score = scoreFunc(path, uncoveredL)
 			if score > maxScore:
-				#maxP = path
-				#deleteEdgesFromL(maxP, uncoveredL)
-				#.append(maxP)
-
 				#set new high score as key
 				hSDict.clear()
 				hSDict[score] = [path]
@@ -137,12 +133,7 @@ def greedyAlgorithm(setP, uncoveredL):
 	nodes_used = usedMSL
 	print("Nodes used: " + str(nodes_used))
 	return retPaths
-
-'''
-testPaths = [[1,2,3],[1,2,5,3],[1,4,3],[1,4,5,3],[2,5],[4,5],[4,3],[2,3],[3,4]]
-testUncoverdL = [(1,2),(1,4),(2,5),(5,4),(2,3),(5,3),(4,3)]
-print greedyAlgorithm(testPaths, testUncoverdL)
-'''
+	
 
 def evaluateGreedyResult(setPaths):
 	S = set()
@@ -243,7 +234,7 @@ def print_result(retpaths, inpaths):
 
 	file.write("\nPaths Used During Probing: \n")
 	file.write(str(retpaths))
-	
+
 
 	file.write("\n\nNodes Used as Monitoring Stations: \n")
 	file.write(str(nodes_used) + "\n")	#we need to change the data structure
