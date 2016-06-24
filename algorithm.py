@@ -83,6 +83,7 @@ def tieBreakerPath(listofPaths, usedMSL):
 		return listofPaths[0]
 	return mTPath
 
+
 def greedyAlgorithm(setP, uncoveredL):
 
 	#coeficients
@@ -100,9 +101,9 @@ def greedyAlgorithm(setP, uncoveredL):
 		for path in setP:
 			score = scoreFunc(path, uncoveredL)
 			if score > maxScore:
-				maxP = path
-				deleteEdgesFromL(maxP, uncoveredL)
-				retPaths.append(maxP)
+				#maxP = path
+				#deleteEdgesFromL(maxP, uncoveredL)
+				#.append(maxP)
 
 				#set new high score as key
 				hSDict.clear()
@@ -195,7 +196,7 @@ def main(filename):
     retPaths = greedyAlgorithm(setP, uncovered_edges)
     #print retPaths
     print "the size of retPaths: ", len(retPaths)
-    print_result(retPaths)
+    print_result(retPaths, setP)
 
 
 #*********************************************
@@ -237,15 +238,16 @@ def update_load_values(path):
             edge_loads[rev_edge] += 1
 
 
-def print_result(rpaths):
+def print_result(retpaths, inpaths):
 	file = open("results.txt", 'a')
 
 	file.write("\nPaths Used During Probing: \n")
-	file.write(str(rpaths))
+	file.write(str(retpaths))
 
+	"""		NEED TO BE REMOVED
 	#calculate number of resued paths
 	paths_used = {}
-	for p in rpaths:
+	for p in retpaths:
 		if not str(p) in paths_used:
 			paths_used[str(p)] = 1
 		else:
@@ -264,9 +266,11 @@ def print_result(rpaths):
 		else:
 			path_frequencies[freq] = [p]
 
+	file.write("\nNumber of Unique Paths Used: " + str(len(paths_used.keys())) + " out of " + str(len(inpaths)))
 	file.write("\n\nMost reused path/s: " + str(path_frequencies[high_freq]) + " was/were used " +
 		str(high_freq) + " times")
 	file.write("\nPath Resuse or Loads: \n" + str(path_frequencies))
+	"""
 
 	file.write("\n\nNodes Used as Monitoring Stations: \n")
 	file.write(str(nodes_used) + "\n")	#we need to change the data structure
