@@ -318,7 +318,7 @@ def update_load_values(path, node_loads,edge_loads):
 			edge_loads[rev_edge] += 1
 
 
-def print_result(retPaths, inPaths, node_loads, edge_loads):
+def print_result(output_paths, input_paths, node_loads, edge_loads):
 	"""
 	Given a list of paths returned by the greedy algorithm, evaluates the maximum and avarage edge and
 	node metrics and writes these to a file
@@ -334,14 +334,15 @@ def print_result(retPaths, inPaths, node_loads, edge_loads):
 
 	file = open("results.txt", "a")
 	
-	file.write("Paths Used During Probing: \n")
+	file.write("Paths Used During Probing: " + str(len(output_paths)) + " out of " +
+		str(len(input_paths)) + "\n")
 
-	for path in retPaths:
+	for path in output_paths:
 		file.write(str(path) + "\n")
 
 	#calculate nodes used as monitoring stations
 	monitoring_nodes = set()
-	for path in retPaths:
+	for path in output_paths:
 		monitoring_nodes.add(path[0])
 		monitoring_nodes.add(path[len(path)-1])
 
@@ -350,7 +351,7 @@ def print_result(retPaths, inPaths, node_loads, edge_loads):
 	#calculate node load results
 	total_load = 0
 	max_load = 0
-	max_load_at = 0
+	max_load_index = 0
 
 	for nd in node_loads:
 		load = node_loads[nd]
@@ -358,19 +359,19 @@ def print_result(retPaths, inPaths, node_loads, edge_loads):
 
 		if load > max_load:
 			max_load = load
-			max_load_at = nd
+			max_load_index = nd
 
 	mean_load = total_load/len(node_loads.keys())
 
 	file.write("\n-----------------\nNode Loads\n" +
 		"- Average Node Load: " + str(mean_load) +
-		"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_at))
+		"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_index))
 	file.write("\n All Node Loads: \n" + str(node_loads)+"\n")
 
 	#calculate edge load results
 	total_load = 0
 	max_load = 0
-	max_load_at = 0
+	max_load_index = 0
 
 	for eg in edge_loads:
 		load = edge_loads[eg]
@@ -378,13 +379,13 @@ def print_result(retPaths, inPaths, node_loads, edge_loads):
 
 		if load > max_load:
 			max_load = load
-			max_load_at = eg
+			max_load_index = eg
 
 	mean_load = total_load / len(edge_loads.keys())
 
 	file.write("\n-----------------\nEdge Loads\n" +
 		"- Average Edge Load: " + str(mean_load) +
-		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_at))
+		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_index))
 	
 	file.write("\n All Edge Loads: \n")
 	i = 0
