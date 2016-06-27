@@ -8,23 +8,22 @@ import random
 
 def main():
 
-	file = open("test_graph_params.txt", 'a')
+	file = open("test_graphs_params.txt", 'a')
 	num_graphs = int(raw_input("How many graphs do you want to create: "))
 
 	i = 0
 	while i < num_graphs:
-		num_nodes = random.randint(10, 100)
+		num_nodes = str(random.randint(10, 100))
 		probability = "%.2f" % random.random()
-		graph_seed = random.randint(1, 999)
-		min_edge_weight = random.randint(1, 5)
-		max_edge_weight = random.randint(5, 10)
-		weight_seed = random.randint(1, 100)
+		graph_seed = str(random.randint(1, 999))
+		min_edge_weight = str(random.randint(1, 5))
+		max_edge_weight = str(random.randint(5, 10))
+		weight_seed = str(random.randint(1, 100))
 
-		file.write(num_nodes, probability, graph_seed,
-			min_edge_weight, max_edge_weight, weight_seed)
+		file.write(num_nodes + " " +probability + " " +  graph_seed + " " +
+			min_edge_weight + " " + max_edge_weight + " " + weight_seed + "\n")
 
-		i++
-
+		i += 1
 
 
 if __name__ == "__main__":
