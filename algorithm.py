@@ -229,31 +229,33 @@ def main(filename):
 	list_of_param_graphs = generate_graphs_params(filename)
 
 	for param_graphs in list_of_param_graphs:
+		#print "current graph: " + str(param_graphs)
 		node_loads = {}
 		edge_loads = {}
-    	paths_used = {}
-    	H = nx.fast_gnp_random_graph(param_graphs[0], param_graphs[1], param_graphs[2], False)
-    	randSeed = param_graphs[5]
-    	for (u,v) in H.edges():
-    		random.seed(randSeed)
-    		rInt = random.randint(param_graphs[3],param_graphs[4])
-    		H[u][v]['w'] = rInt
-    		randSeed += 1
-    	draw_graph(H)
-    	set_of_paths_P = nx.all_pairs_shortest_path(H)
-    	setP = removeDuplicate(set_of_paths_P)
-    	uncovered_edges = get_all_edges_from_SOP(setP)
+		paths_used = {}
+		H = nx.fast_gnp_random_graph(param_graphs[0], param_graphs[1], param_graphs[2], False)
+		randSeed = param_graphs[5]
 
-    	#initialize all network loads
-    	nds = H.nodes();
-    	for nd in nds:
-    		node_loads[nd] = 0
-    	for e in uncovered_edges:
-    		edge_loads[e] = 0
+		for (u,v) in H.edges():
+			random.seed(randSeed)
+			rInt = random.randint(param_graphs[3], param_graphs[4])
+			H[u][v]['w'] = rInt
+			randSeed += 1
 
-    	retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
-    	#print "edge loads: " + str(edge_loads)
-    	print_result(retPaths, setP, node_loads, edge_loads)
+		draw_graph(H)
+		set_of_paths_P = nx.all_pairs_shortest_path(H)
+		setP = removeDuplicate(set_of_paths_P)
+		uncovered_edges = get_all_edges_from_SOP(setP)
+
+		#initilize all network loads
+		nds = H.nodes()
+		for nd in nds:
+			node_loads[nd] = 0
+		for e in uncovered_edges:
+			edge_loads[e] = 0
+
+		retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
+		print_result(retPaths, setP, node_loads, edge_loads)
 
 
 def node_load_score(path, node_loads):
@@ -332,7 +334,7 @@ def print_result(output_paths, input_paths, node_loads, edge_loads):
 		apppeds data to a file, results.txt
 	"""
 
-	file = open("results.txt", "a")
+	file = open("results.txt", 'a')
 	
 	file.write("Paths Used During Probing: " + str(len(output_paths)) + " out of " +
 		str(len(input_paths)) + "\n")
@@ -406,7 +408,7 @@ def print_result(output_paths, input_paths, node_loads, edge_loads):
 			str(edge3) + " : " + str(load_on_edge3) + "\n") 
 		file.write(formatted_str)
 		i += 4 
-	file.write("\n")
+	file.write("\n--------------------------------------------------------------\n")
 	file.close()
 
 
