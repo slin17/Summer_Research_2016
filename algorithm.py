@@ -135,10 +135,10 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 	Output:
 		a set of paths picked by Greedy Algorithm
 	'''
-	#coeficients
-	EDGE_COVERAGE = 1
-	EDGE_LOAD = 0
-	NODE_LOAD = 0
+	#coeficients set to random weight values
+	COVERAGE = 0.5
+	EDGE_LOAD = 0.25
+	NODE_LOAD = 0.25
 	
 	retPaths = []
 	usedMSL = set()
@@ -149,6 +149,13 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 		
 		for path in setP:
 			score = scoreFunc(path, uncoveredL)
+
+			if score > 0:
+				score  = ((COVERAGE * score) + (EDGE_LOAD * edge_load_score(path, edge_loads)) + 
+					(NODE_LOAD * node_load_score(path, node_loads)))
+			else:
+				continue
+
 			if score > maxScore:
 				hSDict.clear()
 				hSDict[score] = [path]
