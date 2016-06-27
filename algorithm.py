@@ -221,9 +221,9 @@ def main(filename):
 	#read graph creation properties from file
 	list_of_param_graphs = generate_graphs_params(filename)
 
-    for param_graphs in list_of_param_graphs:
-    	node_loads = {}
-    	edge_loads = {}
+	for param_graphs in list_of_param_graphs:
+		node_loads = {}
+		edge_loads = {}
     	paths_used = {}
     	H = nx.fast_gnp_random_graph(param_graphs[0], param_graphs[1], param_graphs[2], False)
     	randSeed = param_graphs[5]
@@ -236,16 +236,18 @@ def main(filename):
     	set_of_paths_P = nx.all_pairs_shortest_path(H)
     	setP = removeDuplicate(set_of_paths_P)
     	uncovered_edges = get_all_edges_from_SOP(setP)
-    	#initialize all network loads to 1
+
+    	#initialize all network
     	nds = H.nodes();
     	for nd in nds:
     		node_loads[nd] = 0
     	for e in uncovered_edges:
     		edge_loads[e] = 0
-    	retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
-    	#print retPaths
-    	print "the size of retPaths: ", len(retPaths)
-    	print_result(retPaths, setP, node_loads, edge_loads)
+
+		retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
+		#print retPaths
+		print "the size of retPaths: ", len(retPaths)
+		print_result(retPaths, setP, node_loads, edge_loads)
 
 
 def node_load_score(path, node_loads):
@@ -257,11 +259,11 @@ def node_load_score(path, node_loads):
 	Output:
 		score - the node load score of the input path
 	"""
-    score = 0
-    for nd in path:
-        score += node_loads[nd]
-        
-    return score
+	score = 0
+	for nd in path:
+		score += node_loads[nd]
+
+	return score
 
 
 def edge_load_score(path, edge_loads):
@@ -273,17 +275,16 @@ def edge_load_score(path, edge_loads):
 	Output:
 		score - the edge load score of the input path
 	"""
-    score = 0
-    for i in range (len(path) - 1):
-        edge = (path[i], path[i + 1])
-        rev_edge = (path[i + 1], path[i])
+	score = 0
+	for i in range (len(path) - 1):
+		edge = (path[i], path[i + 1])
+		rev_edge = (path[i + 1], path[i])
         
         if edge in edge_loads:
-            score += edge_loads[edge]
-        elif rev_edge in edge_loads:
-            score += edge_loads[rev_edge]
-    
-    return score
+        	score += edge_loads[edge]
+    	elif rev_edge in edge_loads:
+    		score += edge_loads[rev_edge]
+	return score
 
 
 def update_load_values(path, node_loads,edge_loads):
@@ -295,19 +296,20 @@ def update_load_values(path, node_loads,edge_loads):
 		node_loads - a dictionary holding cumulative loads for each node
 		edge_loads - a dictionary holding cumulative loads for each edge
 	"""
-    #update node loads
-    for nd in path:
-        node_loads[nd] += 1;
-        
-    #update edge loads
-    for i in range(len(path) - 1):
-        edge = (path[i], path[i + 1])
-        rev_edge = (path[i + 1], path[i])
-        
-        if edge in edge_loads:
-            edge_loads[edge] += 1
-        elif rev_edge in edge_loads:
-            edge_loads[rev_edge] += 1
+
+	#update node loads
+	for nd in path:
+		node_loads[nd] += 1
+
+	#update edge loads
+	for i in range(len(path) - 1):
+		edge = (path[i], path[i + 1])
+		rev_edge = (path[i + 1], path[i])
+
+		if edge in edge_loads:
+			edge_loads[edge] += 1
+		elif rev_edge in edge_loads:
+			edge_loads[rev_edge] += 1
 
 
 def print_result(retPaths, inPaths, node_loads, edge_loads):
@@ -323,6 +325,7 @@ def print_result(retPaths, inPaths, node_loads, edge_loads):
 	Output:
 		apppeds data to a file, results.txt
 	"""
+
 	file = open("results.txt", "a")
 	
 	file.write("Paths Used During Probing: \n")
