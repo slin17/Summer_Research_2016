@@ -185,15 +185,7 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 	return retPaths
 	
 
-"""def evaluateGreedyResult(setPaths):   FUNCTIONALITY IN print_results()
-	S = set()
-	for path in setPaths:
-		S.add(path[0])
-		S.add(path[len(path)-1])
-	return S"""
-
-
-def generate_graphs_params(filename):
+def read_graphs_params(filename):
 	"""
 	Reads a series of graph generation parameters from a file
 	Input:
@@ -226,7 +218,7 @@ def main(filename):
 		filename - name of the file from which to read graph generation parameters
 	"""
 	#read graph creation properties from file
-	list_of_param_graphs = generate_graphs_params(filename)
+	list_of_param_graphs = read_graphs_params(filename)
 
 	for param_graphs in list_of_param_graphs:
 		#print "current graph: " + str(param_graphs)
