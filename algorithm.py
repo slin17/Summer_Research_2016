@@ -171,22 +171,29 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 		#keep track of nodes used as monitoring stations
 		usedMSL.add(maxP[0])
 		usedMSL.add(maxP[-1])
-		setP.remove(maxP)		#remove shoden path from the chosen path
+		setP.remove(maxP)
 
 		#update load values
 		update_load_values(maxP, node_loads, edge_loads)
 	return retPaths
 	
 
-def evaluateGreedyResult(setPaths):
+"""def evaluateGreedyResult(setPaths):   FUNCTIONALITY IN print_results()
 	S = set()
 	for path in setPaths:
 		S.add(path[0])
 		S.add(path[len(path)-1])
-	return S
+	return S"""
 
 
 def generate_graphs_params(filename):
+	"""
+	Reads a series of graph generation parameters from a file
+	Input:
+		filename - the nam of the file to be read from
+	Output:
+		list_of_param_graphs - a list of graph generation parameters
+	"""
 	list_of_param_graphs = []
 	
 	file = open(filename, "r")
@@ -205,8 +212,14 @@ def generate_graphs_params(filename):
 
 
 def main(filename):
-    #read graph creation properties from file
-    list_of_param_graphs = generate_graphs_params(filename)
+	"""
+	Starting point of the program. Creates a series of graphs and for each runs the 
+	probing algorithm, writing the results to a file
+	Input:
+		filename - name of the file from which to read graph generation parameters
+	"""
+	#read graph creation properties from file
+	list_of_param_graphs = generate_graphs_params(filename)
 
     for param_graphs in list_of_param_graphs:
     	node_loads = {}
@@ -236,6 +249,14 @@ def main(filename):
 
 
 def node_load_score(path, node_loads):
+	"""
+	Calculates the node load score of a path
+	Input:
+		path - the path for which the score is to be calculated
+		node_loads - a dictionary holding cumulative loads for each node
+	Output:
+		score - the node load score of the input path
+	"""
     score = 0
     for nd in path:
         score += node_loads[nd]
@@ -244,6 +265,14 @@ def node_load_score(path, node_loads):
 
 
 def edge_load_score(path, edge_loads):
+	"""
+	Calculates the edge load score of a path
+	Input:
+		path - the path for which the score is to be calculated
+		edge_loads - a dictionary holding cumulative loads for each edge
+	Output:
+		score - the edge load score of the input path
+	"""
     score = 0
     for i in range (len(path) - 1):
         edge = (path[i], path[i + 1])
@@ -258,6 +287,14 @@ def edge_load_score(path, edge_loads):
 
 
 def update_load_values(path, node_loads,edge_loads):
+	"""
+	Given a probing path, updates the node load and edge load dictionaries for each
+	node and edge along the path
+	Input:
+		path - a path picked during an iteration of the greedy algorithm
+		node_loads - a dictionary holding cumulative loads for each node
+		edge_loads - a dictionary holding cumulative loads for each edge
+	"""
     #update node loads
     for nd in path:
         node_loads[nd] += 1;
@@ -274,12 +311,32 @@ def update_load_values(path, node_loads,edge_loads):
 
 
 def print_result(retPaths, inPaths, node_loads, edge_loads):
+	"""
+	Given a list of paths returned by the greedy algorithm, evaluates the maximum and avarage edge and
+	node metrics and writes these to a file
+	Input:
+		retPaths - a list of paths returned by the greedy algorithm
+		inPaths - a list of paths supplied as input to the greedy algorith calculated
+				  form networkx.all_pair_shortest_paths()
+		node_loads - a dictionary holding cumulative loads for each node
+		edge_loads - a dictionary holding cumulative loads for each edge
+	Output:
+		apppeds data to a file, results.txt
+	"""
 	file = open("results.txt", "a")
 	
 	file.write("Paths Used During Probing: \n")
 
 	for path in retPaths:
 		file.write(str(path) + "\n")
+
+	#calculate nodes used as monitoring stations
+	monitoring_nodes = set()
+	for path in retPaths:
+		monitoring_nodes.add(path[0])
+		monitoring_nodes.add(path[len(path)-1])
+
+	file.write("\nNodes Used as Monitoring Station: \n" + str(monitoring_nodes) + "\n")
 
 	#calculate node load results
 	total_load = 0
