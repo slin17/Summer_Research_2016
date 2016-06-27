@@ -237,17 +237,16 @@ def main(filename):
     	setP = removeDuplicate(set_of_paths_P)
     	uncovered_edges = get_all_edges_from_SOP(setP)
 
-    	#initialize all network
+    	#initialize all network loads
     	nds = H.nodes();
     	for nd in nds:
     		node_loads[nd] = 0
     	for e in uncovered_edges:
     		edge_loads[e] = 0
 
-		retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
-		#print retPaths
-		print "the size of retPaths: ", len(retPaths)
-		print_result(retPaths, setP, node_loads, edge_loads)
+    	retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
+    	#print "edge loads: " + str(edge_loads)
+    	print_result(retPaths, setP, node_loads, edge_loads)
 
 
 def node_load_score(path, node_loads):
@@ -379,6 +378,7 @@ def print_result(retPaths, inPaths, node_loads, edge_loads):
 	file.write("\n-----------------\nEdge Loads\n" +
 		"- Average Edge Load: " + str(mean_load) +
 		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_at))
+	
 	file.write("\n All Edge Loads: \n")
 	i = 0
 	while i < len(edge_loads.keys()) - 4:
