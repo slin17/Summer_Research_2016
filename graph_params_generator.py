@@ -20,7 +20,7 @@ def main():
 		max_edge_weight = str(random.randint(5, 10))
 		weight_seed = str(random.randint(1, 100))
 
-		file.write(num_nodes + " " +probability + " " +  graph_seed + " " +
+		file.write(str(i) + " " + num_nodes + " " +probability + " " +  graph_seed + " " +
 			min_edge_weight + " " + max_edge_weight + " " + weight_seed + "\n")
 
 		i += 1

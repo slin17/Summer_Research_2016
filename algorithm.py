@@ -1,27 +1,30 @@
 import sys
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import networkx as nx 
 import random
+import csv
 
 def edge_id(edge):
 	if (edge[0] > edge[1]):
 		return (edge[1], edge[0])
 	else: return edge
 
+'''
 def draw_graph(H):
-	'''
+	
 	a function to draw a given graph with nodes labelled
 	Input:
 		H - a graph created by networkx.fast_gnp_random_graph() method
 	Output:
 		None
-	'''
+	
 	labelsdict = {}
 	for node in H.nodes():
 		labelsdict[node] = str(node)
 	pos=nx.spring_layout(H)
 	nx.draw(H, labels = labelsdict, with_label = True)
 	plt.show()
+'''
 
 
 def removeDuplicate(set_of_paths_P):
@@ -140,7 +143,7 @@ def scoreforMS(path, usedMSL):
 
 
 
-def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
+def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads, coeffs):
 	'''
 	a Greedy Algorithm that tries to pick, on every iteration, the path with the maximum score 
 	Input:
@@ -149,10 +152,10 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 		a set of paths picked by Greedy Algorithm
 	'''
 	#coeficients set to random weight values
-	COVERAGE = 1
-	EDGE_LOAD = -1
-	NODE_LOAD = -0
-	MS = 1
+	COVERAGE = coeffs[0]
+	EDGE_LOAD = coeffs[1]
+	NODE_LOAD = coeffs[2]
+	MS = coeffs[3]
 	
 	retPaths = []
 	usedMSL = set()
@@ -168,10 +171,6 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 				temp = edge_load_score(path, edge_loads)
 				score  = ((COVERAGE * score) + (EDGE_LOAD * temp) + 
 					(NODE_LOAD * node_load_score(path, node_loads))) + MS*scoreforMS(path, usedMSL)
-				if path == [1,11,14]:
-					print "edge_loads[(1,11)]: ", edge_loads.get(edge_id((11,1)), 0)
-					print "score for 1,11,14: ", score
-					print "edge_load_score for 1,11,14: ", temp
 			else:
 				continue
 
@@ -189,7 +188,7 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 			maxP = tieBreakerPath(hSDict, usedMSL)
 		else:
 			maxP = hSDict[0]
-		print "maxP: ", maxP
+		#print "maxP: ", maxP
 		#print "edge_loads: ", edge_loads
 		#print "score:", 
 		deleteEdgesFromL(maxP, uncoveredL)
@@ -221,7 +220,7 @@ def read_graphs_params(filename):
 		param_graphs = []
 		line = raw_line.strip().split()
 		for i in xrange(len(line)):
-			if i == 1:
+			if i == 2:
 				param_graphs.append(float(line[i]))
 			else:
 				param_graphs.append(int(line[i]))
@@ -229,45 +228,71 @@ def read_graphs_params(filename):
 
 	return list_of_param_graphs
 
+def read_coeff(filename):
+	list_of_coeffs = []
+	file = open(filename, "r")
+	list_of_lines = file.readlines()
+	for raw_line in list_of_lines:
+		coeffs = []
+		line = raw_line.strip().split()
+		for item in line:
+			coeffs.append(float(item))
+		list_of_coeffs.append(coeffs)
+	return list_of_coeffs
 
-def main(filename):
+
+
+def main(list_of_filenames):
 	"""
 	Starting point of the program. Creates a series of graphs and for each runs the 
 	probing algorithm, writing the results to a file
 	Input:
 		filename - name of the file from which to read graph generation parameters
 	"""
+
 	#read graph creation properties from file
-	list_of_param_graphs = read_graphs_params(filename)
+	list_of_param_graphs = read_graphs_params(list_of_filenames[0])
+	list_of_coeffs = read_coeff(list_of_filenames[1])
 
-	for param_graphs in list_of_param_graphs:
-		#print "current graph: " + str(param_graphs)
-		node_loads = {}
-		edge_loads = {}
-		paths_used = {}
-		H = nx.fast_gnp_random_graph(param_graphs[0], param_graphs[1], param_graphs[2], False)
-		randSeed = param_graphs[5]
+	for coeffs in list_of_coeffs:
+		iD = 0
+		file = open("results.csv", 'at')
+		writer = csv.writer(file)
+		writer.writerow(('Coefficients for:', 'Edge Coverage', 'Edge Load', 'Node Load', 'Number of Monitoring Stations'))
+		writer.writerow(('', coeffs[0], coeffs[1], coeffs[2], coeffs[3]))
 
-		for (u,v) in H.edges():
-			random.seed(randSeed)
-			rInt = random.randint(param_graphs[3], param_graphs[4])
-			H[u][v]['w'] = rInt
-			randSeed += 1
+		writer.writerow(('Graph ID', 'Number of Paths Used', 'Total Paths', 'Number of Monitoring Stations', 
+			'Average Node Load', 'Maximum Node Load', 'Average Edge Load', 'Maximum Edge Load'))
+		for param_graphs in list_of_param_graphs:
+			#print "current graph: ", param_graphs
+			node_loads = {}
+			edge_loads = {}
+			paths_used = {}
+			H = nx.fast_gnp_random_graph(param_graphs[1], param_graphs[2], param_graphs[3], False)
+			randSeed = param_graphs[6]
 
-		draw_graph(H)
-		set_of_paths_P = nx.all_pairs_shortest_path(H)
-		setP = removeDuplicate(set_of_paths_P)
-		uncovered_edges = get_all_edges_from_SOP(setP)
+			for (u,v) in H.edges():
+				random.seed(randSeed)
+				rInt = random.randint(param_graphs[4], param_graphs[5])
+				H[u][v]['w'] = rInt
+				randSeed += 1
 
-#		#initilize all network loads
-#		nds = H.nodes()
-#		for nd in nds:
-#			node_loads[nd] = 0
-#		for e in uncovered_edges:
-#			edge_loads[e] = 0
+			#draw_graph(H)
+			set_of_paths_P = nx.all_pairs_shortest_path(H)
+			setP = removeDuplicate(set_of_paths_P)
+			uncovered_edges = get_all_edges_from_SOP(setP)
 
-		retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
-		print_result(H, retPaths, setP, node_loads, edge_loads)
+	#		#initilize all network loads
+	#		nds = H.nodes()
+	#		for nd in nds:
+	#			node_loads[nd] = 0
+	#		for e in uncovered_edges:
+	#			edge_loads[e] = 0
+
+			retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads, coeffs)
+			print_result(H, retPaths, setP, node_loads, edge_loads, iD, file, writer)
+			iD += 1
+		file.close()
 
 
 def node_load_score(path, node_loads):
@@ -335,7 +360,7 @@ def update_load_values(path, node_loads,edge_loads):
 #			edge_loads[rev_edge] += 1
 
 
-def print_result(H, output_paths, input_paths, node_loads, edge_loads):
+def print_result(H, output_paths, input_paths, node_loads, edge_loads, iD, file, writer):
 	"""
 	Given a list of paths returned by the greedy algorithm, evaluates the maximum and avarage edge and
 	node metrics and writes these to a file
@@ -350,23 +375,26 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads):
 		apppeds data to a file, results.txt
 	"""
 
-	file = open("results2.txt", 'a')
-	
-	file.write("Paths Used During Probing: " + str(len(output_paths)) + " out of " +
-		str(len(input_paths)) + "\n")
+	#file.write("Paths Used During Probing: " + str(len(output_paths)) + " out of " +
+	#	str(len(input_paths)) + "\n")
 
-	for path in output_paths:
-		file.write(str(path) + "\n")
+	numPaths = len(output_paths)
+	totalPaths = len(input_paths)
+	#for path in output_paths:
+	#	file.write(str(path) + "\n")
 
+	#writing Graph iD
+	#file.write("Graph ID: " + str(iD))
 	#calculate nodes used as monitoring stations
 	monitoring_nodes = set()
 	for path in output_paths:
 		monitoring_nodes.add(path[0])
 		monitoring_nodes.add(path[len(path)-1])
 
-	file.write("\nNodes Used as Monitoring Station: \n" + str(monitoring_nodes) + "\n" + 
-		"Number of Monitoring Stations: " + str(len(monitoring_nodes)) + "\n")
-
+	#file.write("\nNodes Used as Monitoring Station: \n" + str(monitoring_nodes) + "\n" + 
+	#	"Number of Monitoring Stations: " + str(len(monitoring_nodes)) + "\n")
+	#file.write("\n\nNumber of Monitoring Stations: " + str(len(monitoring_nodes)) + "\n")
+	numMS = len(monitoring_nodes)
 	#calculate node load results
 	total_load = 0
 	max_load = 0
@@ -382,10 +410,13 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads):
 
 	mean_load = float(total_load)/nx.number_of_nodes(H)
 
-	file.write("\n-----------------\nNode Loads\n" +
-		"- Average Node Load: " + str(mean_load) +
-		"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_index))
-	file.write("\n All Node Loads: \n" + str(node_loads)+"\n")
+	avg_Node_Load = mean_load
+	max_Node_Load = max_load
+
+	#file.write("\n-----------------\nNode Loads\n" +
+	#	"- Average Node Load: " + str(mean_load) +
+	#	"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_index))
+	#file.write("\n All Node Loads: \n" + str(node_loads)+"\n")
 
 	#calculate edge load results
 	total_load = 0
@@ -401,10 +432,14 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads):
 			max_load_index = eg
 
 	mean_load = float(total_load) / nx.number_of_edges(H)
-
+	
+	avg_Edge_Load = mean_load
+	max_Edge_Load = max_load
+	'''
 	file.write("\n-----------------\nEdge Loads\n" +
 		"- Average Edge Load: " + str(mean_load) +
 		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_index))
+	
 	
 	file.write("\n All Edge Loads: \n")
 	i = 0
@@ -425,12 +460,15 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads):
 			str(edge3) + " : " + str(load_on_edge3) + "\n") 
 		file.write(formatted_str)
 		i += 4 
-	file.write("\n--------------------------------------------------------------\n")
-	file.close()
+	'''
+	#file.write("\n--------------------------------------------------------------\n")
+	writer.writerow((iD, numPaths, totalPaths, numMS, "%.2f" % avg_Node_Load, max_Node_Load,
+		"%.2f" % avg_Edge_Load, max_Edge_Load))
+	#file.close()
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main([sys.argv[1], sys.argv[2]])
 
 
 

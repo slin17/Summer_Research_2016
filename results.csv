@@ -1,0 +1,6 @@
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,0.0,0.0,0.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,31,586,22,3.94,6,1.23,3
+1,43,2322,37,3.61,7,1.28,4
+2,358,2672,66,14.99,26,1.11,4
