@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import networkx as nx 
 import random
 
+def edge_id(edge):
+	if (edge[0] > edge[1]):
+		return (edge[1], edge[0])
+	else: return edge
 
 def draw_graph(H):
 	'''
@@ -50,14 +54,14 @@ def get_all_edges_from_SOP(setP):
 	Output:
 		a path (list of edges/tuples)
 	'''
-	retL = []
+	retL = set()
 	for path in setP:
 		for i in xrange(len(path)-1):
-			temp = (path[i],path[i+1])
-			tempRev = (path[i+1], path[i])
-			if not (temp in retL or tempRev in retL):
-				retL.append(temp)
-	return retL
+			temp = edge_id((path[i],path[i+1]))
+#			tempRev = (path[i+1], path[i])
+#			if not (temp in retL or tempRev in retL):
+			retL.add(temp)
+	return list(retL)
 
 
 def scoreFunc(path, uncoveredL):
@@ -71,11 +75,11 @@ def scoreFunc(path, uncoveredL):
 	'''
 	retScore = 0
 	for i in xrange(len(path)-1):
-		temp = (path[i],path[i+1])
-		tempRev = (path[i+1], path[i])
+		temp = edge_id((path[i],path[i+1]))
+#		tempRev = (path[i+1], path[i])
 		bool1 = temp in uncoveredL
-		bool2 = tempRev in uncoveredL
-		if  bool1 or bool2:
+#		bool2 = tempRev in uncoveredL
+		if  bool1:
 			retScore += 1
 	return retScore
 
@@ -90,14 +94,14 @@ def deleteEdgesFromL(path, uncoveredL):
 		None 
 	'''
 	for i in xrange(len(path)-1):
-		temp = (path[i],path[i+1])
-		tempRev = (path[i+1], path[i])
+		temp = edge_id((path[i],path[i+1]))
+#		tempRev = (path[i+1], path[i])
 		bool1 = temp in uncoveredL
-		bool2 = tempRev in uncoveredL
+#		bool2 = tempRev in uncoveredL
 		if bool1:
 			uncoveredL.remove(temp)
-		if bool2:
-			uncoveredL.remove(tempRev)
+#		if bool2:
+#			uncoveredL.remove(tempRev)
 
 
 def tieBreakerPath(listofPaths, usedMSL):
@@ -126,6 +130,15 @@ def tieBreakerPath(listofPaths, usedMSL):
 		return listofPaths[0]
 	return mTPath
 
+def scoreforMS(path, usedMSL):
+	if path[0] in usedMSL and path[-1] in usedMSL:
+		return 2
+	elif path[0] in usedMSL or path[-1] in usedMSL:
+		return 1
+	else:
+		return 0
+
+
 
 def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 	'''
@@ -136,49 +149,56 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads):
 		a set of paths picked by Greedy Algorithm
 	'''
 	#coeficients set to random weight values
-	COVERAGE = 0.5
-	EDGE_LOAD = 0.25
-	NODE_LOAD = 0.25
+	COVERAGE = 1
+	EDGE_LOAD = -1
+	NODE_LOAD = -0
+	MS = 1
 	
 	retPaths = []
 	usedMSL = set()
-	hSDict = {}
+	hSDict = list()
 	maxP = []
 	while len(uncoveredL) > 0:
-		maxScore = -1
+		maxScore = None
 		
 		for path in setP:
 			score = scoreFunc(path, uncoveredL)
 
 			if score > 0:
-				score  = ((COVERAGE * score) + (EDGE_LOAD * edge_load_score(path, edge_loads)) + 
-					(NODE_LOAD * node_load_score(path, node_loads)))
+				temp = edge_load_score(path, edge_loads)
+				score  = ((COVERAGE * score) + (EDGE_LOAD * temp) + 
+					(NODE_LOAD * node_load_score(path, node_loads))) + MS*scoreforMS(path, usedMSL)
+				if path == [1,11,14]:
+					print "edge_loads[(1,11)]: ", edge_loads.get(edge_id((11,1)), 0)
+					print "score for 1,11,14: ", score
+					print "edge_load_score for 1,11,14: ", temp
 			else:
 				continue
 
-			if score > maxScore:
-				hSDict.clear()
-				hSDict[score] = [path]
+			if score > maxScore: # includes the case when maxScore is None
+				hSDict = list()
+				hSDict.append(path)
 				maxScore = score
 
-			if score == maxScore:
+			elif score == maxScore:
 				#store all paths this a score == highscore
-				if path not in hSDict[score]:
-					hSDict[score].append(path)
+				hSDict.append(path)
 
-		lP = hSDict[hSDict.keys()[0]]	#list of tied paths
-		if len(lP) > 1:
-			maxP = tieBreakerPath(lP, usedMSL)
+
+		if len(hSDict) > 1:
+			maxP = tieBreakerPath(hSDict, usedMSL)
 		else:
-			maxP = lP[0]
-
+			maxP = hSDict[0]
+		print "maxP: ", maxP
+		#print "edge_loads: ", edge_loads
+		#print "score:", 
 		deleteEdgesFromL(maxP, uncoveredL)
 		retPaths.append(maxP)
 
 		#keep track of nodes used as monitoring stations
 		usedMSL.add(maxP[0])
 		usedMSL.add(maxP[-1])
-		setP.remove(maxP)
+		#setP.remove(maxP)
 
 		#update load values
 		update_load_values(maxP, node_loads, edge_loads)
@@ -247,15 +267,15 @@ def main(filename):
 		setP = removeDuplicate(set_of_paths_P)
 		uncovered_edges = get_all_edges_from_SOP(setP)
 
-		#initilize all network loads
-		nds = H.nodes()
-		for nd in nds:
-			node_loads[nd] = 0
-		for e in uncovered_edges:
-			edge_loads[e] = 0
+#		#initilize all network loads
+#		nds = H.nodes()
+#		for nd in nds:
+#			node_loads[nd] = 0
+#		for e in uncovered_edges:
+#			edge_loads[e] = 0
 
 		retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads)
-		print_result(retPaths, setP, node_loads, edge_loads)
+		print_result(H, retPaths, setP, node_loads, edge_loads)
 
 
 def node_load_score(path, node_loads):
@@ -269,7 +289,7 @@ def node_load_score(path, node_loads):
 	"""
 	score = 0
 	for nd in path:
-		score += node_loads[nd]
+		score += node_loads.get(nd, 0)
 
 	return score
 
@@ -284,14 +304,15 @@ def edge_load_score(path, edge_loads):
 		score - the edge load score of the input path
 	"""
 	score = 0
-	for i in range (len(path) - 1):
-		edge = (path[i], path[i + 1])
-		rev_edge = (path[i + 1], path[i])
+	for i in xrange (len(path) - 1):
+		edge = edge_id((path[i], path[i + 1]))
+#		rev_edge = (path[i + 1], path[i])
         
-        if edge in edge_loads:
-        	score += edge_loads[edge]
-    	elif rev_edge in edge_loads:
-    		score += edge_loads[rev_edge]
+		score += edge_loads.get(edge, 0)
+#        if edge in edge_loads:
+ #       	score += edge_loads[edge]
+  #  	if rev_edge in edge_loads:
+   # 		score += edge_loads[rev_edge]
 	return score
 
 
@@ -307,24 +328,27 @@ def update_load_values(path, node_loads,edge_loads):
 
 	#update node loads
 	for nd in path:
-		node_loads[nd] += 1
+		node_loads[nd] = node_loads.get(nd, 0) + 1
 
 	#update edge loads
 	for i in range(len(path) - 1):
-		edge = (path[i], path[i + 1])
-		rev_edge = (path[i + 1], path[i])
+		edge = edge_id((path[i], path[i + 1]))
+#		rev_edge = (path[i + 1], path[i])
 
-		if edge in edge_loads:
-			edge_loads[edge] += 1
-		elif rev_edge in edge_loads:
-			edge_loads[rev_edge] += 1
+		edge_loads[edge] = edge_loads.get(edge, 0) + 1
+
+#		if edge in edge_loads:
+#			edge_loads[edge] += 1
+#		elif rev_edge in edge_loads:
+#			edge_loads[rev_edge] += 1
 
 
-def print_result(output_paths, input_paths, node_loads, edge_loads):
+def print_result(H, output_paths, input_paths, node_loads, edge_loads):
 	"""
 	Given a list of paths returned by the greedy algorithm, evaluates the maximum and avarage edge and
 	node metrics and writes these to a file
 	Input:
+		H - the graph
 		retPaths - a list of paths returned by the greedy algorithm
 		inPaths - a list of paths supplied as input to the greedy algorith calculated
 				  form networkx.all_pair_shortest_paths()
@@ -334,7 +358,7 @@ def print_result(output_paths, input_paths, node_loads, edge_loads):
 		apppeds data to a file, results.txt
 	"""
 
-	file = open("results.txt", 'a')
+	file = open("results2.txt", 'a')
 	
 	file.write("Paths Used During Probing: " + str(len(output_paths)) + " out of " +
 		str(len(input_paths)) + "\n")
@@ -348,7 +372,8 @@ def print_result(output_paths, input_paths, node_loads, edge_loads):
 		monitoring_nodes.add(path[0])
 		monitoring_nodes.add(path[len(path)-1])
 
-	file.write("\nNodes Used as Monitoring Station: \n" + str(monitoring_nodes) + "\n")
+	file.write("\nNodes Used as Monitoring Station: \n" + str(monitoring_nodes) + "\n" + 
+		"Number of Monitoring Stations: " + str(len(monitoring_nodes)) + "\n")
 
 	#calculate node load results
 	total_load = 0
@@ -363,7 +388,7 @@ def print_result(output_paths, input_paths, node_loads, edge_loads):
 			max_load = load
 			max_load_index = nd
 
-	mean_load = total_load/len(node_loads.keys())
+	mean_load = float(total_load)/nx.number_of_nodes(H)
 
 	file.write("\n-----------------\nNode Loads\n" +
 		"- Average Node Load: " + str(mean_load) +
@@ -383,7 +408,7 @@ def print_result(output_paths, input_paths, node_loads, edge_loads):
 			max_load = load
 			max_load_index = eg
 
-	mean_load = total_load / len(edge_loads.keys())
+	mean_load = float(total_load) / nx.number_of_edges(H)
 
 	file.write("\n-----------------\nEdge Loads\n" +
 		"- Average Edge Load: " + str(mean_load) +
