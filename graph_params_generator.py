@@ -8,7 +8,7 @@ import random
 
 def main():
 
-	file = open("test_graphs_params.txt", 'a')
+	file = open("test_graphs_params.txt", 'w')
 	num_graphs = int(raw_input("How many graphs do you want to create: "))
 
 	i = 0
@@ -24,6 +24,23 @@ def main():
 			min_edge_weight + " " + max_edge_weight + " " + weight_seed + "\n")
 
 		i += 1
+	file.close()
+
+	new_file = open("test_coeffs.txt", 'w')
+	num_coeffs_sets = int(raw_input("How many sets of coefficients do you want to create: "))
+
+	j = 0
+	while j < num_coeffs_sets:
+		edge_coverage = "%.2f" % random.uniform(0,1)
+		edge_load = "%.2f" % (-random.uniform(0,1))
+		node_load = "%.2f" % (-random.uniform(0,1))
+		monitoring_s = "%.2f" % random.uniform(0,1)
+
+		new_file.write(edge_coverage + " " + edge_load + " " + node_load + " " + monitoring_s + "\n")
+
+		j += 1
+	new_file.close()
+
 
 if __name__ == "__main__":
 	main()

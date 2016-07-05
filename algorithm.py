@@ -157,6 +157,7 @@ def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 	edge_pathL_dict = {}
 	path_iD_node_load = {}
 	path_iD_edge_load = {}
+	path_iD_edge_coverage = {}
 
 	heap = hq.heapqup(dict(), reverse = True)
 
@@ -170,6 +171,7 @@ def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 
 		path_iD_node_load[path_iD] = node_L_score
 		path_iD_edge_load[path_iD] = edge_L_score
+		path_iD_edge_coverage[path_iD] = edge_C_score
 
 		score  = ((COVERAGE * edge_C_score) + (EDGE_LOAD * edge_L_score) + 
 					(NODE_LOAD * node_L_score)) #+ MS*scoreforMS(path, usedMSL)
@@ -207,12 +209,13 @@ def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 		for edge in get_all_edges_from_SOP([maxP]):
 			for path_iD in edge_pathL_dict[edge]:
 				path_iD_edge_load[path_iD] += 1
+				path_iD_edge_coverage[path_iD] -= 1
 				overlapping_paths.add(path_iD)
 		
 		# update their scores (heap.update(path_iD,new_score))
 		for path_iD in overlapping_paths:
 			path = path_dict[path_iD]
-			edge_C_score = scoreFunc(path, uncoveredL)
+			edge_C_score = path_iD_edge_coverage[path_iD]
 			edge_L_score = path_iD_edge_load[path_iD]
 			node_L_score = path_iD_node_load[path_iD]
 			score  = ((COVERAGE * edge_C_score) + (EDGE_LOAD * edge_L_score) + 
@@ -281,7 +284,7 @@ def main(list_of_filenames):
 
 	for coeffs in list_of_coeffs:
 		iD = 0
-		file = open("results3.csv", 'at')
+		file = open("results2.csv", 'at')
 		writer = csv.writer(file)
 		writer.writerow(('Coefficients for:', 'Edge Coverage', 'Edge Load', 'Node Load', 'Number of Monitoring Stations'))
 		writer.writerow(('', coeffs[0], coeffs[1], coeffs[2], coeffs[3]))
