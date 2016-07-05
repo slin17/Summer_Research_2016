@@ -1,0 +1,78 @@
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,-1.0,0.0,0.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,95,190,20,10.30,16,1.00,1
+1,942,1596,57,34.23,40,1.00,1
+2,201,1193,47,11.04,20,1.00,1
+3,110,190,20,11.75,16,1.00,1
+4,1072,1596,57,38.54,46,1.00,1
+5,236,3537,77,9.19,15,1.00,1
+6,237,435,30,16.90,23,1.00,1
+7,390,720,37,22.24,30,1.00,1
+8,611,6087,98,16.78,26,1.00,1
+9,415,4664,87,13.45,20,1.00,1
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,-1.0,0.0,1.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,95,190,20,10.30,16,1.00,1
+1,942,1596,57,34.23,40,1.00,1
+2,201,1193,47,11.04,20,1.00,1
+3,110,190,20,11.75,16,1.00,1
+4,1072,1596,57,38.54,46,1.00,1
+5,236,3537,77,9.19,15,1.00,1
+6,237,435,30,16.90,23,1.00,1
+7,390,720,37,22.24,30,1.00,1
+8,611,6087,98,16.78,26,1.00,1
+9,415,4664,87,13.45,20,1.00,1
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,0.0,-1.0,0.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,149,190,20,15.20,16,1.40,4
+1,1135,1596,57,40.05,41,1.14,5
+2,436,1193,47,19.09,20,1.45,7
+3,149,190,20,15.20,16,1.24,4
+4,1393,1596,57,49.04,50,1.25,8
+5,991,3537,78,26.09,27,2.17,14
+6,327,435,30,22.13,23,1.25,7
+7,534,720,37,29.19,31,1.26,5
+8,1495,6087,98,31.07,32,1.50,14
+9,1151,4664,87,27.06,28,1.59,12
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,-1.0,0.0,0.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,95,190,20,10.30,16,1.00,1
+1,942,1596,57,34.23,40,1.00,1
+2,201,1193,47,11.04,20,1.00,1
+3,110,190,20,11.75,16,1.00,1
+4,1072,1596,57,38.54,46,1.00,1
+5,236,3537,77,9.19,15,1.00,1
+6,237,435,30,16.90,23,1.00,1
+7,390,720,37,22.24,30,1.00,1
+8,611,6087,98,16.78,26,1.00,1
+9,415,4664,87,13.45,20,1.00,1
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,-1.0,0.0,1.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,94,190,20,10.30,16,1.01,2
+1,948,1596,56,34.54,40,1.01,2
+2,206,1193,47,11.15,19,1.00,1
+3,110,190,19,11.85,16,1.02,2
+4,1075,1596,57,38.68,46,1.00,2
+5,241,3537,74,9.37,15,1.02,2
+6,236,435,30,16.93,23,1.01,2
+7,395,720,37,22.38,30,1.00,1
+8,620,6087,97,16.89,24,1.00,2
+9,422,4664,83,13.59,21,1.01,2
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,0.0,-1.0,0.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,149,190,20,15.20,16,1.40,4
+1,1135,1596,57,40.05,41,1.14,5
+2,436,1193,47,19.09,20,1.45,7
+3,149,190,20,15.20,16,1.24,4
+4,1393,1596,57,49.04,50,1.25,8
+5,991,3537,78,26.09,27,2.17,14
+6,327,435,30,22.13,23,1.25,7
+7,534,720,37,29.19,31,1.26,5
+8,1495,6087,98,31.07,32,1.50,14
+9,1151,4664,87,27.06,28,1.59,12

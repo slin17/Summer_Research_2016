@@ -1,6 +1,52 @@
 Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
 ,1.0,0.0,0.0,0.0
 Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
-0,31,586,22,3.94,6,1.23,3
-1,43,2322,37,3.61,7,1.28,4
-2,358,2672,66,14.99,26,1.11,4
+0,91,190,20,10.30,16,1.04,3
+1,944,1596,56,34.96,41,1.04,9
+2,203,1193,45,11.98,19,1.13,3
+3,113,190,20,12.70,16,1.13,9
+4,1072,1596,56,39.28,46,1.04,8
+5,236,3537,72,10.00,19,1.13,4
+6,237,435,30,17.37,23,1.05,4
+7,385,720,36,22.65,30,1.05,8
+8,597,6087,95,17.84,28,1.11,8
+9,409,4664,83,14.25,20,1.10,3
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,-1.0,0.0,0.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,91,190,20,10.10,16,1.00,1
+1,944,1596,57,34.26,40,1.00,1
+2,206,1193,47,11.15,19,1.00,1
+3,113,190,20,11.90,16,1.00,1
+4,1072,1596,57,38.54,46,1.00,1
+5,235,3537,78,9.19,14,1.00,2
+6,237,435,30,16.90,23,1.00,1
+7,385,720,37,22.11,30,1.00,1
+8,598,6087,96,16.64,25,1.00,1
+9,410,4664,87,13.39,19,1.00,1
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,-1.0,0.0,1.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,101,190,20,10.65,16,1.01,2
+1,963,1596,56,35.09,40,1.03,2
+2,236,1193,44,12.02,20,1.03,2
+3,117,190,20,12.50,16,1.06,2
+4,1095,1596,56,39.39,46,1.02,2
+5,266,3537,69,10.08,18,1.08,2
+6,247,435,30,17.50,23,1.03,2
+7,409,720,37,23.08,30,1.03,2
+8,674,6087,94,17.62,26,1.02,2
+9,482,4664,79,14.52,24,1.03,2
+Coefficients for:,Edge Coverage,Edge Load,Node Load,Number of Monitoring Stations
+,1.0,0.0,-1.0,0.0
+Graph ID,Number of Paths Used,Total Paths,Number of Monitoring Stations,Average Node Load,Maximum Node Load,Average Edge Load,Maximum Edge Load
+0,106,190,20,10.85,16,1.00,1
+1,999,1596,57,35.23,40,1.00,1
+2,292,1193,47,12.98,19,1.00,1
+3,120,190,20,12.25,16,1.00,1
+4,1118,1596,57,39.35,49,1.00,1
+5,426,3537,78,11.63,20,1.00,1
+6,263,435,30,17.77,23,1.00,1
+7,424,720,37,23.16,30,1.00,1
+8,977,6087,98,20.51,30,1.00,1
+9,705,4664,87,16.78,25,1.00,1

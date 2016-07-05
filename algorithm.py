@@ -3,6 +3,7 @@ import sys
 import networkx as nx 
 import random
 import csv
+import heapqup as hq
 
 def edge_id(edge):
 	if (edge[0] > edge[1]):
@@ -143,7 +144,7 @@ def scoreforMS(path, usedMSL):
 
 
 
-def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads, coeffs):
+def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 	'''
 	a Greedy Algorithm that tries to pick, on every iteration, the path with the maximum score 
 	Input:
@@ -159,48 +160,73 @@ def greedyAlgorithm(setP, uncoveredL, node_loads, edge_loads, coeffs):
 	
 	retPaths = []
 	usedMSL = set()
-	hSDict = list()
-	maxP = []
-	while len(uncoveredL) > 0:
-		maxScore = None
+
+	node_pathL_dict = {}
+	edge_pathL_dict = {}
+	path_iD_node_load = {}
+	path_iD_edge_load = {}
+
+	heap = hq.heapqup(dict(), reverse = True)
+
+	#first loop through all the paths 
+	#store their iDs and scores in the max-heap dict
+	for path_iD in path_dict.keys():
+		path = path_dict[path_iD]
+		edge_C_score = scoreFunc(path, uncoveredL)
+		edge_L_score = edge_load_score(path, edge_loads)
+		node_L_score = node_load_score(path, node_loads)
+
+		path_iD_node_load[path_iD] = node_L_score
+		path_iD_edge_load[path_iD] = edge_L_score
+
+		score  = ((COVERAGE * edge_C_score) + (EDGE_LOAD * edge_L_score) + 
+					(NODE_LOAD * node_L_score)) #+ MS*scoreforMS(path, usedMSL)
+		heap.offer(path_iD, score)
 		
-		for path in setP:
-			score = scoreFunc(path, uncoveredL)
+		for node in path:
+			node_pathL_dict[node] = node_pathL_dict.get(node, [])
+			node_pathL_dict[node].append(path_iD)
 
-			if score > 0:
-				temp = edge_load_score(path, edge_loads)
-				score  = ((COVERAGE * score) + (EDGE_LOAD * temp) + 
-					(NODE_LOAD * node_load_score(path, node_loads))) + MS*scoreforMS(path, usedMSL)
-			else:
-				continue
+		for edge in get_all_edges_from_SOP([path]):
+			edge_pathL_dict[edge] = edge_pathL_dict.get(edge, [])
+			edge_pathL_dict[edge].append(path_iD)
 
-			if score > maxScore: # includes the case when maxScore is None
-				hSDict = list()
-				hSDict.append(path)
-				maxScore = score
+	while len(uncoveredL) > 0: 
+		overlapping_paths = set()
+		# no need for tie breaking???
 
-			elif score == maxScore:
-				#store all paths this a score == highscore
-				hSDict.append(path)
-
-
-		if len(hSDict) > 1:
-			maxP = tieBreakerPath(hSDict, usedMSL)
-		else:
-			maxP = hSDict[0]
-		#print "maxP: ", maxP
-		#print "edge_loads: ", edge_loads
-		#print "score:", 
-		deleteEdgesFromL(maxP, uncoveredL)
-		retPaths.append(maxP)
-
-		#keep track of nodes used as monitoring stations
+		# poll the first path from max-heap
+		maxP_iD = heap.poll(True)[0]
+		maxP = path_dict[maxP_iD]
 		usedMSL.add(maxP[0])
-		usedMSL.add(maxP[-1])
-		#setP.remove(maxP)
-
+		usedMSL.add(maxP[len(maxP)-1])
 		#update load values
 		update_load_values(maxP, node_loads, edge_loads)
+		# add it to the retPaths
+		retPaths.append(maxP)
+		# removed edges in this path from uncoveredL
+		deleteEdgesFromL(maxP, uncoveredL)
+		
+		# for all the paths intersecting with it in terms of nodes and edges
+		for node in maxP:
+			for path_iD in node_pathL_dict[node]:
+				path_iD_node_load[path_iD] += 1
+				overlapping_paths.add(path_iD)
+
+		for edge in get_all_edges_from_SOP([maxP]):
+			for path_iD in edge_pathL_dict[edge]:
+				path_iD_edge_load[path_iD] += 1
+				overlapping_paths.add(path_iD)
+		
+		# update their scores (heap.update(path_iD,new_score))
+		for path_iD in overlapping_paths:
+			path = path_dict[path_iD]
+			edge_C_score = scoreFunc(path, uncoveredL)
+			edge_L_score = path_iD_edge_load[path_iD]
+			node_L_score = path_iD_node_load[path_iD]
+			score  = ((COVERAGE * edge_C_score) + (EDGE_LOAD * edge_L_score) + 
+					(NODE_LOAD * node_L_score)) + MS*scoreforMS(path, usedMSL)
+			heap.update(path_iD, score)
 	return retPaths
 	
 
@@ -240,6 +266,13 @@ def read_coeff(filename):
 		list_of_coeffs.append(coeffs)
 	return list_of_coeffs
 
+def create_path_dict(setP):
+	i = 0
+	ret_dict = {}
+	for path in setP:
+		ret_dict[str(i)] = path
+		i += 1
+	return ret_dict
 
 
 def main(list_of_filenames):
@@ -256,7 +289,7 @@ def main(list_of_filenames):
 
 	for coeffs in list_of_coeffs:
 		iD = 0
-		file = open("results.csv", 'at')
+		file = open("results3.csv", 'at')
 		writer = csv.writer(file)
 		writer.writerow(('Coefficients for:', 'Edge Coverage', 'Edge Load', 'Node Load', 'Number of Monitoring Stations'))
 		writer.writerow(('', coeffs[0], coeffs[1], coeffs[2], coeffs[3]))
@@ -280,6 +313,7 @@ def main(list_of_filenames):
 			#draw_graph(H)
 			set_of_paths_P = nx.all_pairs_shortest_path(H)
 			setP = removeDuplicate(set_of_paths_P)
+			path_dict = create_path_dict(setP)
 			uncovered_edges = get_all_edges_from_SOP(setP)
 
 	#		#initilize all network loads
@@ -289,7 +323,7 @@ def main(list_of_filenames):
 	#		for e in uncovered_edges:
 	#			edge_loads[e] = 0
 
-			retPaths = greedyAlgorithm(setP, uncovered_edges, node_loads, edge_loads, coeffs)
+			retPaths = greedyAlgorithm(path_dict, uncovered_edges, node_loads, edge_loads, coeffs)
 			print_result(H, retPaths, setP, node_loads, edge_loads, iD, file, writer)
 			iD += 1
 		file.close()
@@ -468,6 +502,8 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads, iD, file,
 
 
 if __name__ == "__main__":
+	# argv[1] - file for list of graph parameters
+	# argv[2] - file for list of coefficients
     main([sys.argv[1], sys.argv[2]])
 
 
