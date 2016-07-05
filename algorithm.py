@@ -62,8 +62,6 @@ def get_all_edges_from_SOP(setP):
 	for path in setP:
 		for i in xrange(len(path)-1):
 			temp = edge_id((path[i],path[i+1]))
-#			tempRev = (path[i+1], path[i])
-#			if not (temp in retL or tempRev in retL):
 			retL.add(temp)
 	return list(retL)
 
@@ -80,9 +78,7 @@ def scoreFunc(path, uncoveredL):
 	retScore = 0
 	for i in xrange(len(path)-1):
 		temp = edge_id((path[i],path[i+1]))
-#		tempRev = (path[i+1], path[i])
 		bool1 = temp in uncoveredL
-#		bool2 = tempRev in uncoveredL
 		if  bool1:
 			retScore += 1
 	return retScore
@@ -99,13 +95,9 @@ def deleteEdgesFromL(path, uncoveredL):
 	'''
 	for i in xrange(len(path)-1):
 		temp = edge_id((path[i],path[i+1]))
-#		tempRev = (path[i+1], path[i])
 		bool1 = temp in uncoveredL
-#		bool2 = tempRev in uncoveredL
 		if bool1:
 			uncoveredL.remove(temp)
-#		if bool2:
-#			uncoveredL.remove(tempRev)
 
 
 def tieBreakerPath(listofPaths, usedMSL):
@@ -194,7 +186,6 @@ def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 	while len(uncoveredL) > 0: 
 		overlapping_paths = set()
 		# no need for tie breaking???
-
 		# poll the first path from max-heap
 		maxP_iD = heap.poll(True)[0]
 		maxP = path_dict[maxP_iD]
@@ -254,6 +245,7 @@ def read_graphs_params(filename):
 
 	return list_of_param_graphs
 
+
 def read_coeff(filename):
 	list_of_coeffs = []
 	file = open(filename, "r")
@@ -297,7 +289,6 @@ def main(list_of_filenames):
 		writer.writerow(('Graph ID', 'Number of Paths Used', 'Total Paths', 'Number of Monitoring Stations', 
 			'Average Node Load', 'Maximum Node Load', 'Average Edge Load', 'Maximum Edge Load'))
 		for param_graphs in list_of_param_graphs:
-			#print "current graph: ", param_graphs
 			node_loads = {}
 			edge_loads = {}
 			paths_used = {}
@@ -310,12 +301,10 @@ def main(list_of_filenames):
 				H[u][v]['w'] = rInt
 				randSeed += 1
 
-			#draw_graph(H)
 			set_of_paths_P = nx.all_pairs_shortest_path(H)
 			setP = removeDuplicate(set_of_paths_P)
 			path_dict = create_path_dict(setP)
 			uncovered_edges = get_all_edges_from_SOP(setP)
-
 	#		#initilize all network loads
 	#		nds = H.nodes()
 	#		for nd in nds:
@@ -357,13 +346,8 @@ def edge_load_score(path, edge_loads):
 	score = 0
 	for i in xrange (len(path) - 1):
 		edge = edge_id((path[i], path[i + 1]))
-#		rev_edge = (path[i + 1], path[i])
-        
 		score += edge_loads.get(edge, 0)
-#        if edge in edge_loads:
- #       	score += edge_loads[edge]
-  #  	if rev_edge in edge_loads:
-   # 		score += edge_loads[rev_edge]
+
 	return score
 
 
@@ -384,14 +368,8 @@ def update_load_values(path, node_loads,edge_loads):
 	#update edge loads
 	for i in range(len(path) - 1):
 		edge = edge_id((path[i], path[i + 1]))
-#		rev_edge = (path[i + 1], path[i])
 
 		edge_loads[edge] = edge_loads.get(edge, 0) + 1
-
-#		if edge in edge_loads:
-#			edge_loads[edge] += 1
-#		elif rev_edge in edge_loads:
-#			edge_loads[rev_edge] += 1
 
 
 def print_result(H, output_paths, input_paths, node_loads, edge_loads, iD, file, writer):
@@ -409,25 +387,14 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads, iD, file,
 		apppeds data to a file, results.txt
 	"""
 
-	#file.write("Paths Used During Probing: " + str(len(output_paths)) + " out of " +
-	#	str(len(input_paths)) + "\n")
-
 	numPaths = len(output_paths)
 	totalPaths = len(input_paths)
-	#for path in output_paths:
-	#	file.write(str(path) + "\n")
 
-	#writing Graph iD
-	#file.write("Graph ID: " + str(iD))
-	#calculate nodes used as monitoring stations
 	monitoring_nodes = set()
 	for path in output_paths:
 		monitoring_nodes.add(path[0])
 		monitoring_nodes.add(path[len(path)-1])
 
-	#file.write("\nNodes Used as Monitoring Station: \n" + str(monitoring_nodes) + "\n" + 
-	#	"Number of Monitoring Stations: " + str(len(monitoring_nodes)) + "\n")
-	#file.write("\n\nNumber of Monitoring Stations: " + str(len(monitoring_nodes)) + "\n")
 	numMS = len(monitoring_nodes)
 	#calculate node load results
 	total_load = 0
@@ -447,11 +414,6 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads, iD, file,
 	avg_Node_Load = mean_load
 	max_Node_Load = max_load
 
-	#file.write("\n-----------------\nNode Loads\n" +
-	#	"- Average Node Load: " + str(mean_load) +
-	#	"\n- Maximum Node Load: " + str(max_load) + " on node " + str(max_load_index))
-	#file.write("\n All Node Loads: \n" + str(node_loads)+"\n")
-
 	#calculate edge load results
 	total_load = 0
 	max_load = 0
@@ -469,36 +431,9 @@ def print_result(H, output_paths, input_paths, node_loads, edge_loads, iD, file,
 	
 	avg_Edge_Load = mean_load
 	max_Edge_Load = max_load
-	'''
-	file.write("\n-----------------\nEdge Loads\n" +
-		"- Average Edge Load: " + str(mean_load) +
-		"\n- Maximum Edge Load: " + str(max_load) + " on edge " + str(max_load_index))
 	
-	
-	file.write("\n All Edge Loads: \n")
-	i = 0
-	while i < len(edge_loads.keys()) - 4:
-		edge0 = edge_loads.keys()[i]
-		edge1 = edge_loads.keys()[i+1]
-		edge2 = edge_loads.keys()[i+2]
-		edge3 = edge_loads.keys()[i+3]
-
-		load_on_edge0 = edge_loads[edge0]
-		load_on_edge1 = edge_loads[edge1]
-		load_on_edge2 = edge_loads[edge2]
-		load_on_edge3 = edge_loads[edge3]
-
-		formatted_str = (str(edge0) + " : " + str(load_on_edge0) + " | " +
-			str(edge1) + " : " + str(load_on_edge1) + " | " + 
-			str(edge2) + " : " + str(load_on_edge2) + " | " +
-			str(edge3) + " : " + str(load_on_edge3) + "\n") 
-		file.write(formatted_str)
-		i += 4 
-	'''
-	#file.write("\n--------------------------------------------------------------\n")
 	writer.writerow((iD, numPaths, totalPaths, numMS, "%.2f" % avg_Node_Load, max_Node_Load,
 		"%.2f" % avg_Edge_Load, max_Edge_Load))
-	#file.close()
 
 
 if __name__ == "__main__":
