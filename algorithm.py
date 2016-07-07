@@ -100,31 +100,32 @@ def deleteEdgesFromL(path, uncoveredL):
 			uncoveredL.remove(temp)
 
 
-def tieBreakerPath(listofPaths, usedMSL):
-	'''
-	Given a list of paths and a list of used monitoring stations [MS] (nodes)
-	Return a path with its endpoints both, one of them or none, being in the list of used MS
-	If there are multiple "both"s, return the 1st one (arbitray decision), the same goes for multiple "one"s
-	Input:
-		list of paths/lists and a list of integers (nodes)
-	Output:
-		a path/list of integers (nodes)  
-	'''
-	maxTie = 0
-	mTPath = []
-	for path in listofPaths:
-		if path[0] in usedMSL and path[-1] in usedMSL:
-			return path 
-		elif path[0] in usedMSL:
-			maxTie = 1
-			mTPath = path
-		elif path[-1] in usedMSL:
-			maxTie = 1
-			mTPath = path
+# def tieBreakerPath(listofPaths, usedMSL):
+# 	'''
+# 	Given a list of paths and a list of used monitoring stations [MS] (nodes)
+# 	Return a path with its endpoints both, one of them or none, being in the list of used MS
+# 	If there are multiple "both"s, return the 1st one (arbitray decision), the same goes for multiple "one"s
+# 	Input:
+# 		list of paths/lists and a list of integers (nodes)
+# 	Output:
+# 		a path/list of integers (nodes)  
+# 	'''
+# 	maxTie = 0
+# 	mTPath = []
+# 	for path in listofPaths:
+# 		if path[0] in usedMSL and path[-1] in usedMSL:
+# 			return path 
+# 		elif path[0] in usedMSL:
+# 			maxTie = 1
+# 			mTPath = path
+# 		elif path[-1] in usedMSL:
+# 			maxTie = 1
+# 			mTPath = path
 	
-	if maxTie == 0:
-		return listofPaths[0]
-	return mTPath
+# 	if maxTie == 0:
+# 		return listofPaths[0]
+# 	return mTPath
+
 
 def scoreforMS(path, usedMSL):
 	if path[0] in usedMSL and path[-1] in usedMSL:
@@ -134,6 +135,12 @@ def scoreforMS(path, usedMSL):
 	else:
 		return 0
 
+def random_tie_breaker(path_iD_list):
+	if len(path_iD_list) == 0:
+		return path_iD_list[0]
+	else:
+		ret_idx = random.randint(0, len(path_iD_list)-1)
+		return path_iD_list[ret_idx]
 
 
 def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
@@ -158,6 +165,7 @@ def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 	path_iD_node_load = {}
 	path_iD_edge_load = {}
 	path_iD_edge_coverage = {}
+	path_iD_MS_score = {}
 
 	heap = hq.heapqup(dict(), reverse = True)
 
@@ -186,11 +194,18 @@ def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 			edge_pathL_dict[edge].append(path_iD)
 
 	while len(uncoveredL) > 0: 
+		print "len(uncoveredL): ", len(uncoveredL)
 		overlapping_paths = set()
-		# no need for tie breaking???
-		# poll the first path from max-heap
-		maxP_iD = heap.poll(True)[0]
+		# peek all the paths with the max score from max-heap
+		maxP_iD_list = heap.peek_all()
+		# randomly break ties
+		maxP_iD = random_tie_breaker(maxP_iD_list)
+		# remove that path from heap
+		heap.remove(maxP_iD)
+		print heap.get_list()
+
 		maxP = path_dict[maxP_iD]
+		print "maxP: ", maxP
 		usedMSL.add(maxP[0])
 		usedMSL.add(maxP[len(maxP)-1])
 		#update load values
@@ -218,8 +233,11 @@ def greedyAlgorithm(path_dict, uncoveredL, node_loads, edge_loads, coeffs):
 			edge_C_score = path_iD_edge_coverage[path_iD]
 			edge_L_score = path_iD_edge_load[path_iD]
 			node_L_score = path_iD_node_load[path_iD]
+			if path_iD_MS_score.get(path_iD, None) == None:
+				path_iD_MS_score[path_iD] = scoreforMS(path, usedMSL)
+			MS_score = path_iD_MS_score[path_iD]
 			score  = ((COVERAGE * edge_C_score) + (EDGE_LOAD * edge_L_score) + 
-					(NODE_LOAD * node_L_score)) + MS*scoreforMS(path, usedMSL)
+					(NODE_LOAD * node_L_score)) + MS*MS_score
 			heap.update(path_iD, score)
 	return retPaths
 	
@@ -282,19 +300,12 @@ def main(list_of_filenames):
 	list_of_param_graphs = read_graphs_params(list_of_filenames[0])
 	list_of_coeffs = read_coeff(list_of_filenames[1])
 
-	for coeffs in list_of_coeffs:
-		iD = 0
-		file = open("results2.csv", 'at')
-		writer = csv.writer(file)
-		writer.writerow(('Coefficients for:', 'Edge Coverage', 'Edge Load', 'Node Load', 'Number of Monitoring Stations'))
-		writer.writerow(('', coeffs[0], coeffs[1], coeffs[2], coeffs[3]))
+	list_of_setP = []
+	list_of_path_dict = []
+	list_of_uncovered_edges = []
+	list_of_graphs = []
 
-		writer.writerow(('Graph ID', 'Number of Paths Used', 'Total Paths', 'Number of Monitoring Stations', 
-			'Average Node Load', 'Maximum Node Load', 'Average Edge Load', 'Maximum Edge Load'))
-		for param_graphs in list_of_param_graphs:
-			node_loads = {}
-			edge_loads = {}
-			paths_used = {}
+	for param_graphs in list_of_param_graphs:
 			H = nx.fast_gnp_random_graph(param_graphs[1], param_graphs[2], param_graphs[3], False)
 			randSeed = param_graphs[6]
 
@@ -304,21 +315,36 @@ def main(list_of_filenames):
 				H[u][v]['w'] = rInt
 				randSeed += 1
 
+			list_of_graphs.append(H)
 			set_of_paths_P = nx.all_pairs_shortest_path(H)
 			setP = removeDuplicate(set_of_paths_P)
+			list_of_setP.append(setP)
 			path_dict = create_path_dict(setP)
+			list_of_path_dict.append(path_dict)
 			uncovered_edges = get_all_edges_from_SOP(setP)
-	#		#initilize all network loads
-	#		nds = H.nodes()
-	#		for nd in nds:
-	#			node_loads[nd] = 0
-	#		for e in uncovered_edges:
-	#			edge_loads[e] = 0
+			list_of_uncovered_edges.append(uncovered_edges)
 
-			retPaths = greedyAlgorithm(path_dict, uncovered_edges, node_loads, edge_loads, coeffs)
-			print_result(H, retPaths, setP, node_loads, edge_loads, iD, file, writer)
+	for coeffs in list_of_coeffs:
+		iD = 0
+		file = open("results.csv", 'at')
+		writer = csv.writer(file)
+		writer.writerow(('Coefficients for:', 'Edge Coverage', 'Edge Load', 'Node Load', 'Number of Monitoring Stations'))
+		writer.writerow(('', coeffs[0], coeffs[1], coeffs[2], coeffs[3]))
+
+		writer.writerow(('Graph ID', 'Number of Paths Used', 'Total Paths', 'Number of Monitoring Stations', 
+			'Average Node Load', 'Maximum Node Load', 'Average Edge Load', 'Maximum Edge Load'))
+
+		for idx in xrange(len(list_of_setP)):
+			node_loads = {}
+			edge_loads = {}
+			t_path_dict = list_of_path_dict[idx]
+			t_uncovered_edges = list_of_uncovered_edges[idx][:]
+			t_setP = list_of_setP[idx]
+			t_H = list_of_graphs[idx]
+			retPaths = greedyAlgorithm(t_path_dict, t_uncovered_edges, node_loads, edge_loads, coeffs)
+			print_result(t_H, retPaths, t_setP, node_loads, edge_loads, iD, file, writer)
 			iD += 1
-		file.close()
+	file.close()
 
 
 def node_load_score(path, node_loads):

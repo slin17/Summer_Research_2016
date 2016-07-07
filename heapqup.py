@@ -1,5 +1,6 @@
 from math import log, trunc
 from itertools import count
+import Queue as q
 
 class heapitem:
     
@@ -156,7 +157,51 @@ class heapqup:
         
     def update(self, k, v):
         self.offer(k, v)
-        
+    
+    def get_list(self):
+        return [(hpi.k, hpi.v) for hpi in self.__heapitems]
+
+    def peek_all(self):
+        '''
+        return a list of keys whose values are maximum in the heap
+        '''
+        root = self.__heapitems[0]
+        return_list = [root.k]
+        max_val = root.v
+        queue = q.Queue()
+        queue.put((root.k, self.__positions[root.k]))
+        while not queue.empty():
+            self_pos = queue.get()[1]
+            left_child_pos = 2*self_pos + 1
+            right_child_pos = left_child_pos + 1
+            if left_child_pos < len(self.__heapitems):
+                left_child = self.__heapitems[left_child_pos]
+                left_child_val = left_child.v
+                if left_child_val == max_val:
+                    return_list.append(left_child.k)
+                    queue.put((left_child.k, self.__positions[left_child.k]))
+            if right_child_pos < len(self.__heapitems):
+                right_child = self.__heapitems[right_child_pos]
+                right_child_val = right_child.v
+                if right_child_val == max_val:
+                    return_list.append(right_child.k)
+                    queue.put((right_child.k, self.__positions[right_child.k]))
+        return return_list
+
+    def remove(self, k):
+        '''
+        remove the heapitem that matches the given key
+        '''
+        pos_1 = self.__positions[k]
+        if pos_1 != len(self.__heapitems) - 1:
+            pos_2 = len(self.__heapitems) - 1
+            self.__swap(pos_1, pos_2)
+            hp_item = self.__heapitems[pos_1]
+            self.update(hp_item.k, hp_item.v)
+        del self.__positions[k]
+        del self.__heapitems[len(self.__heapitems) - 1] 
+
+
     def __len__(self):
         return len(self.__heapitems)
         
