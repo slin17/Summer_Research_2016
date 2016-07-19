@@ -8,17 +8,17 @@ import random
 
 def main():
 
-	file = open("test_graphs_params.txt", 'w')
+	file = open("paramsG.txt", 'w')
 	num_graphs = int(raw_input("How many graphs do you want to create: "))
 
 	i = 0
 	while i < num_graphs:
-		num_nodes = str(random.randint(10, 100))
+		num_nodes = str(random.randint(30, 200))
 		probability = "%.2f" % random.random()
-		graph_seed = str(random.randint(1, 99))
-		min_edge_weight = str(random.randint(1, 5))
-		max_edge_weight = str(random.randint(5, 10))
-		weight_seed = str(random.randint(1, 100))
+		graph_seed = str(random.randint(1, 150))
+		min_edge_weight = str(random.randint(1, 10))
+		max_edge_weight = str(random.randint(15, 20))
+		weight_seed = str(random.randint(1, 25))
 
 		file.write(str(i) + " " + num_nodes + " " +probability + " " +  graph_seed + " " +
 			min_edge_weight + " " + max_edge_weight + " " + weight_seed + "\n")
@@ -26,7 +26,7 @@ def main():
 		i += 1
 	file.close()
 
-	new_file = open("test_coeffs.txt", 'w')
+	new_file = open("paramsC.txt", 'w')
 	num_coeffs_sets = int(raw_input("How many sets of coefficients do you want to create: "))
 
 	j = 0
