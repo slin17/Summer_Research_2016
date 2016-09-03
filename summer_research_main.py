@@ -1,38 +1,22 @@
 import sys
-#import matplotlib.pyplot as plt
 import networkx as nx 
 import greedy_framework as gf
 import graph_cleanup as gc
 import random
 import csv
-
-'''
-def draw_graph(H):
-	
-	a function to draw a given graph with nodes labelled
-	Input:
-		H - a graph created by networkx.fast_gnp_random_graph() method
-	Output:
-		None
-	
-	labelsdict = {}
-	for node in H.nodes():
-		labelsdict[node] = str(node)
-	pos=nx.spring_layout(H)
-	nx.draw(H, labels = labelsdict, with_label = True)
-	plt.show()
-'''
+import os
+import binary_search_OC as bs_OC
 
 def read_graphs_params(filename):
 	"""
 	Reads a series of graph generation parameters from a file
 	Input:
-		filename - the nam of the file to be read from
+		filename - the name of the file to be read from
 	Output:
 		list_of_param_graphs - a list of graph generation parameters
 	"""
 	list_of_param_graphs = []
-	file = open(filename, "r")
+	file = open(os.path.expanduser("./gnc/"+filename), "r")
 	list_of_lines = file.readlines()
 	for raw_line in list_of_lines:
 		param_graphs = []
@@ -40,6 +24,8 @@ def read_graphs_params(filename):
 		for i in xrange(len(line)):
 			if i == 2:
 				param_graphs.append(float(line[i]))
+			elif i == 0:
+				param_graphs.append(str(line[i]))
 			else:
 				param_graphs.append(int(line[i]))
 		list_of_param_graphs.append(param_graphs)
@@ -49,7 +35,7 @@ def read_graphs_params(filename):
 
 def read_coeff(filename):
 	list_of_coeffs = []
-	file = open(filename, "r")
+	file = open(os.path.expanduser("./gnc/"+filename), "r")
 	list_of_lines = file.readlines()
 	for raw_line in list_of_lines:
 		coeffs = []
@@ -69,59 +55,50 @@ def create_path_dict(setP):
 
 def main(list_of_filenames):
 	"""
-	Starting point of the program. Creates a series of graphs and for each runs the 
-	probing algorithm, writing the results to a file
-	Input:
-		filename - name of the file from which to read graph generation parameters
+	the function that runs all the experiments
 	"""
-
-	#read graph creation properties from file
 	list_of_param_graphs = read_graphs_params(list_of_filenames[0])
 	list_of_coeffs = read_coeff(list_of_filenames[1])
 
 	list_of_setP = []
 	list_of_path_dict = []
 	list_of_uncovered_edges = []
+	list_of_graph_iDs = []
 
-	for param_graphs in list_of_param_graphs:
-			H = nx.fast_gnp_random_graph(param_graphs[1], param_graphs[2], param_graphs[3], False)
-			randSeed = param_graphs[6]
+	for param_graphs in list_of_param_graphs: # getting each graph parameters
+		list_of_graph_iDs.append(param_graphs[0])
+		H = nx.fast_gnp_random_graph(param_graphs[1], param_graphs[2], param_graphs[3], False)
+		randSeed = param_graphs[6]
 
-			for (u,v) in H.edges():
-				random.seed(randSeed)
-				rInt = random.randint(param_graphs[4], param_graphs[5])
-				H[u][v]['w'] = rInt
-				randSeed += 1
+		for (u,v) in H.edges():
+			random.seed(randSeed)
+			rInt = random.randint(param_graphs[4], param_graphs[5])
+			H[u][v]['w'] = rInt
+			randSeed += 1
 
-			set_of_paths_P = nx.all_pairs_shortest_path(H)
-			setP = gc.remove_duplicate_paths(set_of_paths_P)
-			list_of_setP.append(setP)
-			path_dict = create_path_dict(setP)
-			list_of_path_dict.append(path_dict)
-			uncovered_edges = gc.get_all_edges_from_SOP(setP)
-			list_of_uncovered_edges.append(uncovered_edges)
+		set_of_paths_P = nx.all_pairs_shortest_path(H)
+		setP = gc.remove_duplicate_paths(set_of_paths_P, nx.number_of_nodes(H))
+		list_of_setP.append(setP)
+		path_dict = create_path_dict(setP)
+		list_of_path_dict.append(path_dict)
+		uncovered_edges = gc.get_all_edges_from_SOP(setP)
+		list_of_uncovered_edges.append(uncovered_edges)
 
-	file = open("re.csv", 'at')
+
+	out_file = ''.join(["./data/csv/",list_of_filenames[2],".csv"])
+	file = open(os.path.expanduser(out_file), 'at')
 	writer = csv.writer(file)
-
-	iD = 0
 	for idx in xrange(len(list_of_setP)): #loop through the graphs
-
-		writer.writerow(('Graph ID', 'Coefficients',  'Number of Paths Used', 'Total Paths', 'Number of Monitoring Stations', 
-				'Average Node Load', 'Maximum Node Load', 'Average Edge Load', 'Maximum Edge Load'))
-
+		graph_iD = list_of_graph_iDs[idx]
+		writer.writerow(('Graph Params: ', list_of_param_graphs[idx]))
 		for coeffs in list_of_coeffs:
-			t_path_dict = list_of_path_dict[idx]
-			t_uncovered_edges = set(list_of_uncovered_edges[idx])
-			t_setP = list_of_setP[idx]
-			x,y = bs_OC.b_s_1(0, 5, idx, list_of_uncovered_edges, gf.func_wrapper_greedy_algo, t_path_dict, coeffs)
-			print "start_coeff: %.2f, end_coeff: %.2f" %(x,y)
-			opt_c = bs_OC.b_s_2(x, y, 5, idx, list_of_uncovered_edges, gf.func_wrapper_greedy_algo, t_path_dict, coeffs)
-			print "opt_coeff: %.2f" %(opt_c)
-			#sev_tuple = func_wrapper_greedy_algo(t_path_dict, t_uncovered_edges, coeffs, t_path_dict)
-			#print_result(file, iD, coeffs, sev_tuple[0], len(t_setP), sev_tuple[1], sev_tuple[2], sev_tuple[3], sev_tuple[4], sev_tuple[5])
-		iD += 1
-
+			for iteration in xrange(1): # change the input to xrange() depending on the number of iterations on a single experiment
+				t_path_dict = list_of_path_dict[idx]
+				t_uncovered_edges = set(list_of_uncovered_edges[idx])
+				t_setP = list_of_setP[idx]
+				six_tuple = gf.func_wrapper_greedy_algo(t_path_dict, t_uncovered_edges, coeffs[0])
+				writer.writerow((graph_iD, coeffs[0], six_tuple[0], len(t_setP), six_tuple[1], 
+					six_tuple[2], six_tuple[3], six_tuple[4], six_tuple[5]))
 	file.close()
 
 def print_result(file, iD, coeffs, numPaths, totalPaths, numMS, avg_Node_Load, max_Node_Load, avg_Edge_Load, max_Edge_Load):
@@ -148,7 +125,7 @@ def print_result(file, iD, coeffs, numPaths, totalPaths, numMS, avg_Node_Load, m
 if __name__ == "__main__":
 	# argv[1] - file for list of graph parameters
 	# argv[2] - file for list of coefficients
-    main([sys.argv[1], sys.argv[2]])
+    main(sys.argv[1:])
 
 
 
